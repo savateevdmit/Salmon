@@ -1,7 +1,6 @@
 import discord
 from discord.ext import commands
 from config import settings
-from vosk import Model, KaldiRecognizer  # оффлайн-распознавание от Vosk
 import speech_recognition  # распознавание пользовательской речи (Speech-To-Text)
 import wave  # создание и чтение аудиофайлов формата wav
 import json  # работа с json-файлами и json-строками
