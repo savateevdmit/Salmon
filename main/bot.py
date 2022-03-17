@@ -1,8 +1,7 @@
 try:
     import os
     os.system('pip install SpeechRecognition')
-    os.system('pip install PyAudio-0.2.11-cp38-cp38-win32.whl')
-    os.system('pip install PyAudio')
+    os.system('pip3 install PyAudio-0.2.11-cp38-cp38-win32.whl')
 except Exception:
     pass
 
