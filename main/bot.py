@@ -1,7 +1,7 @@
 try:
     import os
     os.system('pip install SpeechRecognition')
-    os.system('python PyAudio/setup.py install')
+    os.system('python PyAudio-0.2.11/setup.py install')
 except Exception:
     pass
 
