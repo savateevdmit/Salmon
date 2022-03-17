@@ -1,10 +1,3 @@
-try:
-    import os
-    os.system('pip install SpeechRecognition')
-    os.system('python PyAudio/setup.py install')
-except Exception:
-    pass
-
 import discord
 from discord.ext import commands
 from config import settings
