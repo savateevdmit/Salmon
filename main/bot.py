@@ -1,8 +1,10 @@
 try:
     import os
     os.system('pip install SpeechRecognition')
+    os.system('pip install PyAudio-0.2.11-cp38-cp38-win32.whl')
 except Exception:
     pass
+
 import discord
 from discord.ext import commands
 from config import settings
