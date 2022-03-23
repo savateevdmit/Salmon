@@ -1,7 +1,9 @@
-from random import sample
+import random
 
+import aiohttp
 import discord
 from discord.ext import commands
+
 from bulls_and_cows import bulls_and_cows
 from config import settings
 
@@ -13,6 +15,7 @@ except:
     pass
 
 a = False
+url = 'https://dtf.ru/kek/entries/new'
 cycles = dict(game=True)
 numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 bot = commands.Bot(command_prefix=settings['prefix'])
@@ -44,6 +47,30 @@ async def leave(ctx):
 
 
 @bot.command()
+async def meme(ctx):
+    embed = discord.Embed(title="", colour=0xfff70a)
+
+    async with aiohttp.ClientSession() as cs:
+        async with cs.get('https://www.reddit.com/r/dankmemes/new.json?sort=hot') as r:
+            res = await r.json()
+            embed.set_image(url=res['data']['children'][random.randint(0, 25)]['data']['url'])
+            await ctx.send(embed=embed)
+
+
+@bot.command()
+async def info(ctx, member: discord.Member = None):
+    embed = discord.Embed(color=0xff781f)
+    embed.set_author(name=f'{member}', icon_url=f'{member.avatar_url}')
+    embed.add_field(name='Дата создания:', value=f'{member.created_at}', inline=False)
+    embed.add_field(name='Высшая роль:', value=f'{member.top_role.mention}', inline=False)
+    embed.set_image(url=f'{member.avatar_url}')
+
+    await ctx.send(embed=embed)
+
+    await ctx.channel.send('\u200b')
+
+
+@bot.command()
 async def bc(ctx):
     embed = discord.Embed(title='❗Правила❗', color=0x4fde02)
 
@@ -56,15 +83,16 @@ async def bc(ctx):
     embed.add_field(name='\u200b',
                     value='**♻Игра уже началась, отправляйте числа!♻**',
                     inline=False)
-    embed.set_image(url='https://lh3.googleusercontent.com/6oHWaM1Z9NELHkkO7VKjwrzkAlG-rTyHGhWJcCnxWHhfJhubkinI_PfnkKS-7bC3t_k=h500')
+    embed.set_image(
+        url='https://lh3.googleusercontent.com/6oHWaM1Z9NELHkkO7VKjwrzkAlG-rTyHGhWJcCnxWHhfJhubkinI_PfnkKS-7bC3t_k=h500')
     await ctx.send(embed=embed)
-    number = sample(range(1, 10), 4)
+    number = random.sample(range(1, 10), 4)
     print(number)
 
     while True:
         message = await bot.wait_for('message', check=bc)
-        if message.content == '!stop_game':
-            await ctx.send('stoped')
+        if message.content == '!stop game':
+            await ctx.send(f'❌{message.author.mention}, игра остановлена!❌')
             return
         else:
             count = 0
@@ -89,9 +117,8 @@ async def bc(ctx):
                                             inline=False)
                             count += 1
                             await message.channel.send(embed=embed)
-                            await ctx.send('stoped')
+                            # await ctx.send('stoped')
                             return
-
 
 
 @bot.command()
