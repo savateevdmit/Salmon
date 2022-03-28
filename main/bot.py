@@ -27,6 +27,7 @@ song = 'song.mp3'
 
 
 a = False
+program_path = os.getcwd()
 cycles = dict(game=True)
 numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 bot = commands.Bot(command_prefix=settings['prefix'])
@@ -74,12 +75,12 @@ async def play(ctx, *arg):
 
         try:
             print(f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}')
-            client.tracks([music_id[-1]])[0].download(Path("Songs", song1))
+            client.tracks([music_id[-1]])[0].download(os.path.join(program_path, 'Songs', song1))
         except Exception as e:
             await ctx.send(traceback.format_exc())
 
         voice = ctx.guild.voice_client
-        source = FFmpegPCMAudio(Path("Songs", song1))
+        source = FFmpegPCMAudio(os.path.join(program_path, 'Songs', song1))
         guild_id = ctx.message.guild.id
 
         guild_id = ctx.message.guild.id
@@ -105,7 +106,7 @@ async def play(ctx, *arg):
         search_result = client.search(name)
         try:
             print(f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}')
-            client.tracks([f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}'])[0].download(Path("Songs", song))
+            client.tracks([f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}'])[0].download(os.path.join(program_path, 'Songs', song))
         except Exception as e:
             await ctx.send(traceback.format_exc())
 
@@ -113,7 +114,7 @@ async def play(ctx, *arg):
             channel = ctx.message.author.voice.channel
             try:
                 voice = await channel.connect()
-                source = FFmpegPCMAudio(Path("Songs", song))
+                source = FFmpegPCMAudio(os.path.join(program_path, 'Songs', song))
                 voice.play(source, after=lambda x=0: check_queue(ctx, ctx.message.guild.id))
             except:
                 pass
