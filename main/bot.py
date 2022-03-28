@@ -18,7 +18,7 @@ client = Client(settings['token_ya'])
 try:
     import os
     os.system('pip install SpeechRecognition')
-    os.system('pip install yandex-music --upgrade')
+    os.system('pip install yandex-music')
 
 except:
     pass
