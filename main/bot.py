@@ -1,6 +1,5 @@
 import random
 
-
 from pathlib import Path
 import aiohttp
 import discord
@@ -18,7 +17,7 @@ client = Client(settings['token_ya'])
 try:
     import os
     os.system('pip install SpeechRecognition')
-    os.system('pip install yandex-music-2.0.1.tar.gz')
+    os.system('pip install yandex-music')
 
 except:
     pass
