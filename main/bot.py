@@ -109,15 +109,18 @@ async def play(ctx, *arg):
             client.tracks([f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}'])[0].download(os.path.join(f'{path}/{song}'))
         except Exception as e:
             await ctx.send(traceback.format_exc())
+        print('скачал трек')
 
         if ctx.author.voice:
             channel = ctx.message.author.voice.channel
             try:
                 voice = await channel.connect()
+                print('пришёл в гс')
                 source = FFmpegPCMAudio(os.path.join(f'{path}/{song}'))
                 voice.play(source, after=lambda x=0: check_queue(ctx, ctx.message.guild.id))
+                print('начал проигрывать песню')
             except:
-                pass
+                print('ошибка в 121 строке')
         else:
             await ctx.send("You are not in a voice channel, you must be in a voice channel to run this command!")
         # player = voice.play(source, after=lambda x=None: check_queue(ctx, ctx.message.guild.id)) # or "path/to/your.mp3"
