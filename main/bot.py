@@ -1,4 +1,5 @@
 import random
+import traceback
 
 from pathlib import Path
 import aiohttp
@@ -50,7 +51,7 @@ def check_queue(ctx, id):
 
 @bot.event
 async def on_ready():
-    await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.listening, name='!help'))
+    await bot.change_presence(status=discord.Status.online, activity=discord.Activity(type=discord.ActivityType.listening, name='!help'))
 
 
 @bot.command()
@@ -74,8 +75,8 @@ async def play(ctx, *arg):
         try:
             print(f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}')
             client.tracks([music_id[-1]])[0].download(Path("Songs", song1))
-        except:
-            await ctx.send('К сожалению, я не смог ничего найти')
+        except Exception as e:
+            await ctx.send(traceback.format_exc())
 
         voice = ctx.guild.voice_client
         source = FFmpegPCMAudio(Path("Songs", song1))
@@ -105,8 +106,8 @@ async def play(ctx, *arg):
         try:
             print(f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}')
             client.tracks([f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}'])[0].download('Songs/song.mp3')
-        except:
-            await ctx.send('К сожалению, я не смог ничего найти')
+        except Exception as e:
+            await ctx.send(traceback.format_exc())
 
         if ctx.author.voice:
             channel = ctx.message.author.voice.channel
