@@ -105,7 +105,7 @@ async def play(ctx, *arg):
         search_result = client.search(name)
         try:
             print(f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}')
-            client.tracks([f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}'])[0].download('Songs/song.mp3')
+            client.tracks([f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}'])[0].download(Path("Songs", song))
         except Exception as e:
             await ctx.send(traceback.format_exc())
 
