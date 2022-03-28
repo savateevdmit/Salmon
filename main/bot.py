@@ -1,11 +1,19 @@
 import random
 
+
+from pathlib import Path
 import aiohttp
 import discord
 from discord.ext import commands
+from discord import FFmpegPCMAudio
 
 from bulls_and_cows import bulls_and_cows
 from config import settings
+from yandex_music import ClientAsync, Client
+
+client = ClientAsync()
+client.init()
+client = Client(settings['token_ya'])
 
 try:
     import os
@@ -14,12 +22,16 @@ try:
 except:
     pass
 
+song = 'song.mp3'
+
+
 a = False
-url = 'https://dtf.ru/kek/entries/new'
 cycles = dict(game=True)
 numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 bot = commands.Bot(command_prefix=settings['prefix'])
 bot.remove_command('help')
+queues = {}
+music_id = []
 
 
 #####################################################
@@ -29,9 +41,122 @@ bot.remove_command('help')
 #     voicee(ctx)
 ######################################################
 
+def check_queue(ctx, id):
+  if queues[id] != {}:
+    voice = ctx.guild.voice_client
+    source = queues[id].pop(0)
+    voice.play(source, after=lambda x=0: check_queue(ctx, ctx.message.guild.id))
+
+
+@bot.event
+async def on_ready():
+    await bot.change_presence(status=discord.Status.idle, activity=discord.Activity(type=discord.ActivityType.listening, name='!help'))
+
+
+@bot.command()
+async def play(ctx, *arg):
+
+    def convert_tuple(c_tuple):
+        str = ' '.join(c_tuple)
+        return str
+
+    if ctx.guild.voice_client in bot.voice_clients and ctx.voice_client.is_playing():
+        await ctx.send(f'{ctx.message.author.mention}, поставил в очередь!')
+
+        name = convert_tuple(arg)
+        print(name)
+        search_result = client.search(name)
+        music_id.append(f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}')
+        song1 = f'{str(len(music_id))}.mp3'
+        if len(music_id) == 4:
+            music_id.clear()
+
+        try:
+            print(f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}')
+            client.tracks([music_id[-1]])[0].download(Path("Songs", song1))
+        except:
+            await ctx.send('К сожалению, я не смог ничего найти')
+
+        voice = ctx.guild.voice_client
+        source = FFmpegPCMAudio(Path("Songs", song1))
+        guild_id = ctx.message.guild.id
+
+        guild_id = ctx.message.guild.id
+        if guild_id in queues:
+            queues[guild_id].append(source)
+        else:
+            queues[guild_id] = [source]
+
+        embed = discord.Embed(title=f'{search_result.best.result.title} - {search_result.best.result.artists[0].name}',
+                              color=0x8c00ff)
+        embed.set_author(name=f'{search_result.best.result.artists[0].name}',
+                         icon_url=f'https://{search_result.best.result.artists[0]["cover"].uri.replace("%%", "600x600")}')
+        embed.add_field(name='Альбом:', value=f'{search_result.best.result.albums[0].title}', inline=False)
+        embed.add_field(name='Год выпуска:', value=f'{search_result.best.result.albums[0].year}', inline=False)
+        embed.set_image(url=f'https://{search_result.best.result.cover_uri.replace("%%", "600x600")}')
+        embed.set_footer(text="Никогда не используйте ’ в запросах!")
+
+        await ctx.send(embed=embed)
+
+    else:
+        name = convert_tuple(arg)
+        print(name)
+        search_result = client.search(name)
+        try:
+            print(f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}')
+            client.tracks([f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}'])[0].download('Songs/song.mp3')
+        except:
+            await ctx.send('К сожалению, я не смог ничего найти')
+
+        if ctx.author.voice:
+            channel = ctx.message.author.voice.channel
+            try:
+                voice = await channel.connect()
+                source = FFmpegPCMAudio(Path("Songs", song))
+                voice.play(source, after=lambda x=0: check_queue(ctx, ctx.message.guild.id))
+            except:
+                pass
+        else:
+            await ctx.send("You are not in a voice channel, you must be in a voice channel to run this command!")
+        # player = voice.play(source, after=lambda x=None: check_queue(ctx, ctx.message.guild.id)) # or "path/to/your.mp3"
+
+        embed = discord.Embed(title=f'{search_result.best.result.title} - {search_result.best.result.artists[0].name}', color=0x8c00ff)
+        embed.set_author(name=f'{search_result.best.result.artists[0].name}', icon_url=f'https://{search_result.best.result.artists[0]["cover"].uri.replace("%%", "600x600")}')
+        embed.add_field(name='Альбом:', value=f'{search_result.best.result.albums[0].title}', inline=False)
+        embed.add_field(name='Год выпуска:', value=f'{search_result.best.result.albums[0].year}', inline=False)
+        embed.set_image(url=f'https://{search_result.best.result.cover_uri.replace("%%","600x600")}')
+        embed.set_footer(text="Никогда не используйте ’ в запросах!")
+
+        await ctx.send(embed=embed)
+
+
+@bot.command()
+async def pause(ctx):
+    voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+    if voice.is_playing():
+        voice.pause()
+    else:
+        await ctx.send('Нечего ставить на паузу')
+
+
+@bot.command()
+async def resume(ctx):
+    voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+    if voice.is_paused():
+        voice.resume()
+    else:
+        await ctx.send('Нет песни на паузе')
+
+
+@bot.command()
+async def stop(ctx):
+    voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
+    voice.stop()
+    # await ctx.send('Нет песни на паузе')
+
+
 @bot.command()
 async def stop_game(ctx):
-    print('jn')
     cycles["game"] = False
 
 
@@ -61,6 +186,7 @@ async def meme(ctx):
 async def info(ctx, member: discord.Member = None):
     embed = discord.Embed(color=0xff781f)
     embed.set_author(name=f'{member}', icon_url=f'{member.avatar_url}')
+    print(f'{member.avatar_url}')
     embed.add_field(name='Дата создания:', value=f'{member.created_at}', inline=False)
     embed.add_field(name='Высшая роль:', value=f'{member.top_role.mention}', inline=False)
     embed.set_image(url=f'{member.avatar_url}')
@@ -142,4 +268,5 @@ async def help(ctx):
     await ctx.send(embed=embed)
 
 
+# Развлекательный бот с мини-играми, высококачественной музыкой от Яндекс Музыки и голосовым управлением
 bot.run(settings['token'])  # Обращаемся к словарю settings с ключом token, для получения токена
