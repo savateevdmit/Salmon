@@ -18,7 +18,7 @@ client = Client(settings['token_ya'])
 try:
     import os
     os.system('pip install SpeechRecognition')
-    os.system('pip install yandex-music')
+    # os.system('pip install yandex-music')
 
 except:
     pass
@@ -27,7 +27,11 @@ song = 'song.mp3'
 
 
 a = False
-path = 'main/Songs/'
+path = 'main/Songs'
+
+# program_path = os.getcwd()  # путь до файла, где запускается программа
+# path = os.path.join(program_path, 'Songs')
+
 cycles = dict(game=True)
 numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 bot = commands.Bot(command_prefix=settings['prefix'])
@@ -129,7 +133,7 @@ async def play(ctx, *arg):
         embed.set_author(name=f'{search_result.best.result.artists[0].name}', icon_url=f'https://{search_result.best.result.artists[0]["cover"].uri.replace("%%", "600x600")}')
         embed.add_field(name='Альбом:', value=f'{search_result.best.result.albums[0].title}', inline=False)
         embed.add_field(name='Год выпуска:', value=f'{search_result.best.result.albums[0].year}', inline=False)
-        print(f'{search_result.best.result.cover_uri}, {search_result}')
+        print(f'{search_result.best.result.cover_uri}, {search_result.best.result}')
         embed.set_image(url=f'https://{search_result.best.result.cover_uri.replace("%%","600x600")}')
         embed.set_footer(text="Никогда не используйте ’ в запросах!")
 
