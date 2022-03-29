@@ -18,7 +18,8 @@ client = Client(settings['token_ya'])
 try:
     import os
     os.system('pip install SpeechRecognition')
-    # os.system('pip install yandex-music')
+    os.system('python3 -m pip install -U discord.py[voice]')
+    os.system("pip install pynacl")
 
 except:
     pass
