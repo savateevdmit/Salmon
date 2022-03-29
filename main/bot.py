@@ -129,7 +129,7 @@ async def play(ctx, *arg):
         embed.set_author(name=f'{search_result.best.result.artists[0].name}', icon_url=f'https://{search_result.best.result.artists[0]["cover"].uri.replace("%%", "600x600")}')
         embed.add_field(name='Альбом:', value=f'{search_result.best.result.albums[0].title}', inline=False)
         embed.add_field(name='Год выпуска:', value=f'{search_result.best.result.albums[0].year}', inline=False)
-        print(f'{search_result.best.result.cover_uri}')
+        print(f'{search_result.best.result.cover_uri}, {search_result}')
         embed.set_image(url=f'https://{search_result.best.result.cover_uri.replace("%%","600x600")}')
         embed.set_footer(text="Никогда не используйте ’ в запросах!")
 
