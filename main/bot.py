@@ -124,7 +124,7 @@ async def play(ctx, *arg):
                 voice.play(source, after=lambda x=0: check_queue(ctx, ctx.message.guild.id))
                 print('начал проигрывать песню')
             except:
-                print('ошибка в 121 строке')
+                print('ошибка в 123 строке')
         else:
             await ctx.send("You are not in a voice channel, you must be in a voice channel to run this command!")
         # player = voice.play(source, after=lambda x=None: check_queue(ctx, ctx.message.guild.id)) # or "path/to/your.mp3"
@@ -133,7 +133,7 @@ async def play(ctx, *arg):
         embed.set_author(name=f'{search_result.best.result.artists[0].name}', icon_url=f'https://{search_result.best.result.artists[0]["cover"].uri.replace("%%", "600x600")}')
         embed.add_field(name='Альбом:', value=f'{search_result.best.result.albums[0].title}', inline=False)
         embed.add_field(name='Год выпуска:', value=f'{search_result.best.result.albums[0].year}', inline=False)
-        print(f'{search_result.best.result.cover_uri}, {search_result.best.result}')
+        # print(f'{search_result.best.result.cover_uri}, {search_result.best.result}')
         embed.set_image(url=f'https://{search_result.best.result.cover_uri.replace("%%","600x600")}')
         embed.set_footer(text="Никогда не используйте ’ в запросах!")
 
