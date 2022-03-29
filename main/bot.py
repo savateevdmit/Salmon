@@ -117,14 +117,14 @@ async def play(ctx, *arg):
 
         if ctx.author.voice:
             channel = ctx.message.author.voice.channel
-            try:
-                voice = await channel.connect()
-                print('пришёл в гс')
-                source = FFmpegPCMAudio(os.path.join(f'{path}/{song}'))
-                voice.play(source, after=lambda x=0: check_queue(ctx, ctx.message.guild.id))
-                print('начал проигрывать песню')
-            except:
-                print('ошибка в 123 строке')
+            # try:
+            voice = await channel.connect()
+            print('пришёл в гс')
+            source = FFmpegPCMAudio(os.path.join(f'{path}/{song}'))
+            voice.play(source, after=lambda x=0: check_queue(ctx, ctx.message.guild.id))
+            print('начал проигрывать песню')
+            # except:
+            #     print('ошибка в 123 строке')
         else:
             await ctx.send("You are not in a voice channel, you must be in a voice channel to run this command!")
         # player = voice.play(source, after=lambda x=None: check_queue(ctx, ctx.message.guild.id)) # or "path/to/your.mp3"
