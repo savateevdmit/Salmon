@@ -1,10 +1,9 @@
-from random import sample
-
 import pymorphy2
+
 flag = True
 
-def bulls_and_cows(entry, number):
 
+def bulls_and_cows(entry, number):
     def count_of_bull_and_cows(number, entry):
         cow, bull = 0, 0
         for i in range(len(number)):
@@ -14,9 +13,7 @@ def bulls_and_cows(entry, number):
                 cow += 1
         return cow, bull
 
-
     morph = pymorphy2.MorphAnalyzer()
-
 
     def morph_cows_and_bulls(morph_cows='корова', morph_bulls='бык'):
         m_cows = morph.parse(morph_cows)[0]
