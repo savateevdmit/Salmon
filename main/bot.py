@@ -3,6 +3,8 @@ import logging
 import os
 import random
 import traceback
+from deep_translator import GoogleTranslator
+from bs4 import BeautifulSoup
 from discord.ext.audiorec import NativeVoiceClient
 # from discord_components import DiscordComponents, Button, ButtonStyle
 # from voice import voice
@@ -649,6 +651,140 @@ async def join(ctx: commands.Context):
             await ctx.invoke(bot.get_command('meme'))
         if 'поставь песню' in lines[0].lower():
             await ctx.invoke(bot.get_command('play'), arg='abc')
+
+l = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
+@bot.command()
+async def film(ctx, *kino):
+    kino = ' '.join([i for i in kino])
+    html = requests.get(
+        f'https://ru.wikipedia.org/w/index.php?search={kino}+фильм&title=Служебная%3AПоиск&go=Перейти&ns0=1').text
+    soup = BeautifulSoup(html, 'html.parser')
+    find_text = str(soup.find('div', {'class': 'mw-search-result-heading'}))
+    a = find_text.split(' ')[3].split('=')[1][1:-1]
+    html = requests.get(f'https://ru.wikipedia.org/{a}').text
+    soup = BeautifulSoup(html, 'html.parser')
+    find_text = str(soup.findAll('span', {'class': 'no-wikidata'}))
+    b = find_text.split(' ')
+    for i in b:
+        if 'src' in i:
+            b = i.split('=')[1][1:-1]
+            break
+    # print(b)
+    picture = f'https:{b}'
+    find_text = str(soup.find('h1', {'class': 'firstHeading mw-first-heading'}))
+    g = '+'.join(find_text.split('=')[-1].split('>')[-2][:-4].split(' '))
+    x = find_text.split('=')[-1].split('>')[-2][:-4]
+    html = requests.get(f'https://www.kinopoisk.ru/index.php?kp_query={g}').text
+    soup = BeautifulSoup(html, 'html.parser')
+    find_text = str(soup.findAll('p', {'class': 'name'}))
+    c = find_text.split(' ')
+    try:
+        d = find_text.split('/')[7][2:-1]
+    except:
+        ss = f'https://www.kinopoisk.ru/index.php?kp_query={g}'
+    pp = 10
+    k = 0
+    n = 0
+    try:
+        for i in d.lower():
+            if i in x.lower():
+                n += 1
+        k = len(x) / n
+        n = 0
+        while k < 0.8:
+            d = find_text.split('/')[7 + pp][2:-1]
+            for i in d.lower():
+                if i in x.lower():
+                    n += 1
+            k = n / len(x)
+            n = 0
+            pp += 10
+        o = pp / 10 * 2 - 2
+        for i in c:
+            if i[-2] in l and o == 0:
+                c = i.split('=')[1][1:-1]
+                break
+            if i[-2] in l:
+                o -= 1
+        ss = f'https://www.kinopoisk.ru/film/{c}/'
+    except Exception as e:
+        print(e)
+
+    html = requests.get(f'https://ru.wikipedia.org/{a}').text
+    soup = BeautifulSoup(html, 'html.parser')
+    find_text = str(soup.find('span', {'data-wikidata-property-id': 'P272'}))
+    e = find_text.split(' ')
+    h = []
+    if e[0] == "None":
+        find_text = str(soup.find('div', {'data-wikidata-property-id': 'P272'}))
+        e = find_text.split(' ')
+    for i in e:
+        if 'href' in i:
+            h.append(i.split('/')[2][:-1])
+    find_text = str(soup.find('span', {'data-wikidata-property-id': 'P2047'}))
+    time = find_text.split('>')[1].split('<')[0]
+    find_text = str(soup.find('span', {'data-wikidata-property-id': 'P2130'}))
+    budget = find_text
+    try:
+        budget = budget[:budget.index('<a')] + budget[budget.index('a>') + 2:]
+    except:
+        pass
+    budget = budget.split('">')[1].split('<sup')[0]
+    find_text = str(soup.find('span', {'data-wikidata-property-id': 'P2142'}))
+    sbori = find_text.split('">')[1].split('<sup')[0]
+    cc1 = h[0]
+    cc2 = 0
+    try:
+        cc2 = h[1]
+    except:
+        pass
+    html = requests.get(f'https://ru.wikipedia.org/wiki/{cc1}').text
+    soup = BeautifulSoup(html, 'html.parser')
+    find_text = str(soup.findAll('span', {'class': 'no-wikidata'}))
+    k = find_text.split(' ')
+    for i in k:
+        if 'src' in i:
+            k = i.split('=')[1][1:-1]
+            break
+    # print(b)
+    picture1 = f'https:{k}'
+    html = requests.get(f'https://ru.wikipedia.org/{a}').text
+    soup = BeautifulSoup(html, 'html.parser')
+    find_text = str(soup.find('span', {'data-wikidata-property-id': 'P345'}))
+    s = find_text.split(' ')
+    for i in s:
+        if 'href' in i:
+            s = i.split('=')[1][1:-1]
+    html = requests.get(s).text
+    soup = BeautifulSoup(html, 'html.parser')
+    find_text = str(soup.find('span', {'class': 'sc-7ab21ed2-1 jGRxWM'}))
+    rating = find_text.split(' ')[-1].split('>')[-2].split('<')[0]
+    find_text = str(soup.find('div', {'class': 'ipc-html-content ipc-html-content--base'}))
+    s = find_text.split('<div>')[1].split('<span')[0]
+    while True:
+        try:
+            s = s[:s.index('(')] + s[s.index(')') + 1:]
+        except:
+            break
+    opisanie = GoogleTranslator(source='auto', target='ru').translate(s)
+    opisanie = GoogleTranslator(source='auto', target='ru').translate(s)
+    embed = discord.Embed(title=x,
+                          color=0xbbff29)
+    if len(picture1) > 12:
+        if cc2 != 0:
+            embed.set_author(name=f'{cc1} and {cc2}',
+                     icon_url=picture1)
+        else:
+            embed.set_author(name=cc1,
+                     icon_url=picture1)
+    embed.add_field(name='Длительность:', value=time, inline=False)
+    embed.add_field(name='IMDb рейтинг:', value=f'{rating}/10', inline=False)
+    embed.add_field(name='Краткое описание:', value=opisanie, inline=False)
+    embed.add_field(name='Ссылка на просмотр:', value=f'{ss}', inline=False)
+    embed.set_image(url=picture)
+    embed.set_footer(text="Никогда не используйте ’ в запросах!")
+
+    await ctx.send(embed=embed)
 
 
 # Развлекательный бот с мини-играми, высококачественной музыкой от Яндекс Музыки и голосовым управлением
