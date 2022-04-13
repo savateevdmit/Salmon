@@ -1,22 +1,16 @@
 import asyncio
 import logging
 import os
-from pytube import YouTube
 import random
 import traceback
 from deep_translator import GoogleTranslator
 from bs4 import BeautifulSoup
-from discord.ext.audiorec import NativeVoiceClient
-# from discord_components import DiscordComponents, Button, ButtonStyle
-# from voice import voice
+
 import aiohttp
 import discord
 from discord import FFmpegPCMAudio
 from discord.ext import commands
-from discord.utils import get
 from discord_buttons_plugin import *
-from mutagen.mp3 import MP3
-# from discord.ext.audiorec import NativeVoiceClient
 from bulls_and_cows import bulls_and_cows
 from config import settings
 from yandex_music import ClientAsync, Client
@@ -25,7 +19,6 @@ client = ClientAsync()
 client.init()
 client = Client(settings['token_ya'])
 logging.basicConfig(level=logging.INFO)
-f = False
 
 try:
     import os
@@ -45,7 +38,10 @@ a = False
 program_path = os.getcwd()  # путь до файла, где запускается программа
 path = os.path.join(program_path, 'Songs')
 DW_SONG = []
-DONATE = ['0891', '0603']
+DONATE = []
+DONATE1 = []
+PLAY = True
+DEVELOPERS = ['0891', '0603']
 
 cycles = dict(game=True)
 numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
@@ -56,6 +52,25 @@ queues = {}
 music_id = []
 bot_queue = []
 
+con = None
+try:
+    con = psycopg2.connect(settings['DATABASE_URL'])
+    cur2 = con.cursor()
+    cur2.execute('select * from donat')
+
+    # display the PostgreSQL database server version
+    result = cur2.fetchall()
+    for i in result:
+        DONATE.append(f'{i[0]}')
+    con.commit()
+    cur2.close()
+except Exception as error:
+    print('Cause: {}'.format(error))
+
+finally:
+    if con is not None:
+        con.close()
+        print('Database connection closed.')
 
 ####################################################
 # ТУТ ГОЛОСОВОЕ УПРАВЛЕНИЕ:
@@ -64,6 +79,17 @@ bot_queue = []
 #     """Joins a voice channel"""
 #     voice(ctx)
 #####################################################
+
+
+def check_queue(ctx, id):
+    if queues[id] != {}:
+        voice = ctx.guild.voice_client
+        print(queues)
+        source = queues[id].pop(0)
+        bot_queue.pop(0)
+        voice.play(source, after=lambda x=0: check_queue(ctx, ctx.message.guild.id))
+
+
 def tr(c):
     a = {'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ё': 'E', 'Ж': 'Zh',
          'З': 'Z', 'И': 'I', 'Й': 'I', 'К': 'K', 'Л': 'L', 'М': 'M', 'Н': 'N', 'О': 'O',
@@ -80,116 +106,15 @@ def tr(c):
             b.append(i)
     return ''.join(b)
 
-
-def check_queue(ctx, id):
-    if queues[id] != {}:
-        voice = ctx.guild.voice_client
-        print(queues)
-        source = queues[id].pop(0)
-        bot_queue.pop(0)
-        voice.play(source, after=lambda x=0: check_queue(ctx, ctx.message.guild.id))
-
-
 @bot.event
 async def on_ready():
     await bot.change_presence(status=discord.Status.online,
                               activity=discord.Activity(type=discord.ActivityType.listening, name='!help'))
     # DiscordComponents(bot)
-@bot.command()
-async def join(ctx: commands.Context):
-    """Joins a voice channel"""
-    def convert_tuple(c_tuple):
-        str = ' '.join(c_tuple)
-        return str
-
-    channel: discord.VoiceChannel = ctx.author.voice.channel  # type: ignore
-    if ctx.voice_client is not None:
-        return await ctx.voice_client.move_to(channel)
-
-    await channel.connect(cls=NativeVoiceClient)
-    f = True
-    # await ctx.invoke(bot.get_command('leave'))
-    # await ctx.invoke(bot.get_command('play'), arg='abcdefu')
-
-    while True:
-
-        ctx.voice_client.record(lambda e: print(f"Exception: {e}"))
-        # await ctx.send(f'Start Recording')
-        await asyncio.sleep(10)
-        wav_bytes = await ctx.voice_client.stop_record()
-        # await ctx.send(f'Stop Recording')
-        f = open("rec.txt")
-        lines = f.readlines()
-        try:
-            os.remove('myfile.wav')
-        except:
-            pass
-        lines = ['включи песню abcdefu']
-        # print(lines[0])
-        # lines = ['включи песню трава у дома']
-        # print('быки' or 'коровы' in lines[0])
-        if 'быки' in lines[0].lower() or 'коровы' in lines[0].lower():
-            await ctx.invoke(bot.get_command('bc'))
-        if 'справка' in lines[0].lower():
-            await ctx.invoke(bot.get_command('help'))
-        if 'покажи' in lines[0].lower() and 'мем' in lines[0].lower():
-            await ctx.invoke(bot.get_command('meme'))
-        if 'чарты' in lines[0].lower() and 'включи' not in lines[0].lower():
-            await ctx.invoke(bot.get_command('chart'))
-        if 'включи' in lines[0].lower() and 'песню' in lines[0].lower():
-
-            await ctx.invoke(bot.get_command('leave'))
-            name = convert_tuple(' '.join(lines[0].split(' ')[lines[0].split(' ').index('песню') + 1:]))
-            print(name)
-            search_result = client.search(name)
-            try:
-                print(f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}')
-                client.tracks([f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}'])[0].download(
-                    os.path.join(f'{path}/{song}'))
-            except Exception as e:
-                await ctx.send(traceback.format_exc())
-            print('скачал трек')
-
-            if ctx.author.voice:
-                channel = ctx.message.author.voice.channel
-                # try:
-
-                voice = await channel.connect()
-                print(voice)
-                print('пришёл в гс')
-                voice = ctx.voice_client
-                source = FFmpegPCMAudio(os.path.join(f'{path}/{song}'))
-                voice.play(source, after=lambda x=0: check_queue(ctx, ctx.message.guild.id))
-                print('начал проигрывать песню')
-                # except:
-                #     print('ошибка в 123 строке')
-            else:
-                await ctx.send("You are not in a voice channel, you must be in a voice channel to run this command!")
-            # player = voice.play(source, after=lambda x=None: check_queue(ctx, ctx.message.guild.id)) # or "path/to/your.mp3"
-
-            embed = discord.Embed(title=f'{search_result.best.result.title} - {search_result.best.result.artists[0].name}',
-                                  color=0x8c00ff)
-            embed.set_author(name=f'{search_result.best.result.artists[0].name}',
-                             icon_url=f'https://{search_result.best.result.artists[0]["cover"].uri.replace("%%", "600x600")}')
-            embed.add_field(name='Альбом:', value=f'{search_result.best.result.albums[0].title}', inline=False)
-            embed.add_field(name='Год выпуска:', value=f'{search_result.best.result.albums[0].year}', inline=False)
-            # print(f'{search_result.best.result.cover_uri}, {search_result.best.result}')
-
-            if search_result.best.result.cover_uri == None:
-                embed.set_image(url=f'https://music.yandex.ru/blocks/meta/i/og-image.png')
-            else:
-                embed.set_image(url=f'https://{search_result.best.result.cover_uri.replace("%%", "600x600")}')
-
-            embed.set_footer(text="Никогда не используйте ’ в запросах!")
-            await ctx.send(embed=embed)
-
-            audio = MP3(f'{path}/{song}')
-            await asyncio.sleep(audio.info.length)
-            print(0)
 
 
 @bot.command()
-async def play(ctx, arg):
+async def play(ctx, *arg):
     def convert_tuple(c_tuple):
         str = ' '.join(c_tuple)
         return str
@@ -311,6 +236,7 @@ async def play(ctx, arg):
 
         embed.set_footer(text="Никогда не используйте ’ в запросах!")
         # await ctx.send(embed=embed)
+
         await buttons.send(
             embed=embed,
             channel=ctx.channel.id,
@@ -567,7 +493,6 @@ async def resume_button(ctx):
 
 @buttons.click
 async def stop_button(ctx):
-
     await ctx.reply("Музыка остановлена!")
     voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     voice.stop()
@@ -617,7 +542,6 @@ async def stop(ctx):
     voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     voice.stop()
     await ctx.voice_client.disconnect()
-    await ctx.invoke(bot.get_command('join'))
     # await ctx.send('Нет песни на паузе')
 
 
@@ -729,8 +653,6 @@ async def leave(ctx):
     await ctx.voice_client.disconnect()
 
 
-
-l = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 @bot.command()
 async def film(ctx, *kino):
     kino = ' '.join([i for i in kino])
@@ -779,10 +701,10 @@ async def film(ctx, *kino):
             pp += 10
         o = pp / 10 * 2 - 2
         for i in c:
-            if i[-2] in l and o == 0:
+            if i[-2] in numbers and o == 0:
                 c = i.split('=')[1][1:-1]
                 break
-            if i[-2] in l:
+            if i[-2] in numbers:
                 o -= 1
         ss = f'https://www.kinopoisk.ru/film/{c}/'
     except Exception as e:
@@ -805,6 +727,7 @@ async def film(ctx, *kino):
     budget = find_text
     try:
         budget = budget[:budget.index('<a')] + budget[budget.index('a>') + 2:]
+
     except:
         pass
     budget = budget.split('">')[1].split('<sup')[0]
@@ -851,10 +774,10 @@ async def film(ctx, *kino):
     if len(picture1) > 12:
         if cc2 != 0:
             embed.set_author(name=f'{cc1} and {cc2}',
-                     icon_url=picture1)
+                             icon_url=picture1)
         else:
             embed.set_author(name=cc1,
-                     icon_url=picture1)
+                             icon_url=picture1)
     embed.add_field(name='Длительность:', value=time, inline=False)
     embed.add_field(name='IMDb рейтинг:', value=f'{rating}/10', inline=False)
     embed.add_field(name='Краткое описание:', value=opisanie, inline=False)
@@ -864,12 +787,154 @@ async def film(ctx, *kino):
 
     await ctx.send(embed=embed)
 
-f = ''
+
+@bot.command()
+async def logo(ctx):
+    global PLAY
+    if PLAY:
+        PLAY = False
+        con = None
+        number = random.sample(range(1, 21), 1)
+        count = 0
+        morph = pymorphy2.MorphAnalyzer()
+        word = morph.parse('секунда')[0]
+
+        try:
+            con = psycopg2.connect(settings['DATABASE_URL'])
+            cur = con.cursor()
+            cur.execute(f'SELECT * from logo where id = {number[0]}')
+
+            # display the PostgreSQL database server version
+            result = cur.fetchone()
+            print(result)
+
+            # close the communication with the HerokuPostgres
+            cur.close()
+        except Exception as error:
+            print('Cause: {}'.format(error))
+
+        finally:
+            if con is not None:
+                con.close()
+                print('Database connection closed.')
+
+        embed = discord.Embed(title='❗Правила❗', color=0xf5e000)
+
+        embed.add_field(name='❓Угадайка логотип❔',
+                        value='🔰 У вас есть 10 попыток, чтобы угадать логотип по картинке. \
+                        Писать можно как на русском, так и на английском.',
+                        inline=False)
+        embed.add_field(name='\u200b',
+                        value='**♻Игра уже началась, вот первый логотип!♻**',
+                        inline=False)
+        embed.set_image(
+            url=f'{result[3]}')
+        await ctx.send(embed=embed)
+        time0 = time.time()
+
+        while True:
+            message = await bot.wait_for('message', check=logo)
+            if message.content == '!stop game':
+                await ctx.send(f'❌{message.author.mention}, игра остановлена!❌')
+                return
+            else:
+                id = message.author.id
+                if message.content.lower() == result[1].lower() or \
+                        message.content.lower() == result[2].lower():
+                    # message.content.lower() in result[1].lower() or\
+                    # message.content.lower() in result[2].lower():
+                    time1 = time.time()
+                    embed = discord.Embed(title='❓Угадайка логотип❔', color=0x4fde02)
+                    embed.add_field(name='🎉' + f'**Поздравляем!**',
+                                    value=f'<@!{id}>' + f', вы угадали за **{int(time1 - time0)}\
+                                            {word.make_agree_with_number(int(time1 - time0)).word}**',
+                                    inline=False)
+                    embed.set_image(
+                        url=f'{result[4]}')
+                    # embed.set_footer(text='Продолжайте!')
+                    await message.channel.send(embed=embed)
+                    count = 0
+                    PLAY = True
+                    return
+                elif count == 10:
+                    embed = discord.Embed(title='❓Угадайка логотип❔', color=0xf25a07)
+                    embed.add_field(name=f'Игра была закончена, так как никто не смог ответить(',
+                                    value=f'Ответ: **{result[2]}**',
+                                    inline=False)
+                    embed.set_image(
+                        url=f'{result[4]}')
+                    # embed.set_footer(text='Продолжайте!')
+                    await message.channel.send(embed=embed)
+                    count = 0
+                    PLAY = True
+                    return
+                else:
+                    count += 1
+
+        embed = discord.Embed(title='Угадайка логотип', color=0xf25a07)
+        embed.add_field(name=f'Игра была закончена, так как никто не смог ответить(',
+                        value=f'Ответ: **{result[2]}**',
+                        inline=False)
+        embed.set_image(
+            url=f'{result[4]}')
+        # embed.set_footer(text='Продолжайте!')
+        await message.channel.send(embed=embed)
+        count = 0
+        PLAY = True
+        return
+
+    else:
+        await ctx.send(f'{ctx.message.author.mention}, пожалуйста завершите начатую игру!')
+
+
+@bot.command()
+async def add(ctx, arg):
+    flag = False
+    author = ctx.message.author
+    if author.discriminator in DEVELOPERS:
+        con = None
+        try:
+            con = psycopg2.connect(settings['DATABASE_URL'])
+            cur = con.cursor()
+            cur2 = con.cursor()
+            cur.execute(f"INSERT INTO donat VALUES ('{arg}')")
+            cur2.execute('select * from donat')
+
+            # display the PostgreSQL database server version
+            result = cur2.fetchall()[:-1]
+            for i in result:
+                DONATE1.append(f'🔹 {i[0]}')
+                if arg in i[0]:
+                    flag = True
+            if flag:
+                await ctx.send(f'❌Ошибка! {arg}, уже был добавлен❌')
+                await ctx.send(f'🔰Список пользователей с премиумом:')
+                await ctx.send('\n'.join(DONATE1))
+            # close the communication with the HerokuPostgres
+            else:
+                con.commit()
+                await ctx.send(f'✅{arg}, добавлен✅')
+                await ctx.send(f'🔰Список пользователей с премиумом:')
+                await ctx.send('\n'.join(DONATE1))
+
+            cur.close()
+        except Exception as error:
+            print('Cause: {}'.format(error))
+
+        finally:
+            if con is not None:
+                con.close()
+                print('Database connection closed.')
+                DONATE1.clear()
+    else:
+        await ctx.send('Эта команда только для разработчиков!')
+
+weather = ''
 
 @bot.command()
 async def wn(ctx, *c):
-    global f
-    f = c
+    global weather
+    weather = c
     region = tr(' '.join(c))
     html = requests.get(f'https://pogoda.mail.ru/prognoz/{region}/').text
     r = 0
@@ -930,10 +995,11 @@ async def wn(ctx, *c):
 
 
 
+
 @buttons.click
 async def next_button(ctx):
-    global f
-    region = tr(' '.join(f))
+    global weather
+    region = tr(' '.join(weather))
     html = requests.get(f'https://pogoda.mail.ru/prognoz/{region}/14dney/#day2').text
     soup = BeautifulSoup(html, 'html.parser')
     find_text = str(soup.findAll('div', {'class': 'day__temperature'}))
@@ -976,13 +1042,12 @@ async def next_button(ctx):
         ]
     )
 
+news2 = ''
 
-
-ff = ''
 
 @bot.command()
 async def news(ctx, *c):
-    global ff
+    global news2
     html = requests.get(f'https://news.mail.ru/?').text
     soup = BeautifulSoup(html, 'html.parser')
     find_text = str(soup.findAll('a', {'class': 'list__text'}))
@@ -1029,18 +1094,111 @@ async def news(ctx, *c):
     b = ''.join(b)
     embed = discord.Embed(title='Последние новости!', description=b,
                           color=0xf5cc00)
-    ff = embed
+    news2 = embed
 
 
 @buttons.click
 async def more_button(ctx):
-    global ff
+    global news2
     await buttons.send(
-        embed=ff,
+        embed=news2,
         channel=ctx.channel.id,
         components=[
         ]
     )
 
+# @bot.command()
+# async def join(ctx: commands.Context):
+#     """Joins a voice channel"""
+#     def convert_tuple(c_tuple):
+#         str = ' '.join(c_tuple)
+#         return str
+#
+#     channel: discord.VoiceChannel = ctx.author.voice.channel  # type: ignore
+#     if ctx.voice_client is not None:
+#         return await ctx.voice_client.move_to(channel)
+#
+#     await channel.connect(cls=NativeVoiceClient)
+#     f = True
+#     # await ctx.invoke(bot.get_command('leave'))
+#     # await ctx.invoke(bot.get_command('play'), arg='abcdefu')
+#
+#     while True:
+#
+#         ctx.voice_client.record(lambda e: print(f"Exception: {e}"))
+#         # await ctx.send(f'Start Recording')
+#         await asyncio.sleep(10)
+#         wav_bytes = await ctx.voice_client.stop_record()
+#         # await ctx.send(f'Stop Recording')
+#         f = open("rec.txt")
+#         lines = f.readlines()
+#         try:
+#             os.remove('myfile.wav')
+#         except:
+#             pass
+#         lines = ['включи песню abcdefu']
+#         # print(lines[0])
+#         # lines = ['включи песню трава у дома']
+#         # print('быки' or 'коровы' in lines[0])
+#         if 'быки' in lines[0].lower() or 'коровы' in lines[0].lower():
+#             await ctx.invoke(bot.get_command('bc'))
+#         if 'справка' in lines[0].lower():
+#             await ctx.invoke(bot.get_command('help'))
+#         if 'покажи' in lines[0].lower() and 'мем' in lines[0].lower():
+#             await ctx.invoke(bot.get_command('meme'))
+#         if 'чарты' in lines[0].lower() and 'включи' not in lines[0].lower():
+#             await ctx.invoke(bot.get_command('chart'))
+#         if 'включи' in lines[0].lower() and 'песню' in lines[0].lower():
+#
+#             await ctx.invoke(bot.get_command('leave'))
+#             name = convert_tuple(' '.join(lines[0].split(' ')[lines[0].split(' ').index('песню') + 1:]))
+#             print(name)
+#             search_result = client.search(name)
+#             try:
+#                 print(f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}')
+#                 client.tracks([f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}'])[0].download(
+#                     os.path.join(f'{path}/{song}'))
+#             except Exception as e:
+#                 await ctx.send(traceback.format_exc())
+#             print('скачал трек')
+#
+#             if ctx.author.voice:
+#                 channel = ctx.message.author.voice.channel
+#                 # try:
+#
+#                 voice = await channel.connect()
+#                 print(voice)
+#                 print('пришёл в гс')
+#                 voice = ctx.voice_client
+#                 source = FFmpegPCMAudio(os.path.join(f'{path}/{song}'))
+#                 voice.play(source, after=lambda x=0: check_queue(ctx, ctx.message.guild.id))
+#                 print('начал проигрывать песню')
+#                 # except:
+#                 #     print('ошибка в 123 строке')
+#             else:
+#                 await ctx.send("You are not in a voice channel, you must be in a voice channel to run this command!")
+#             # player = voice.play(source, after=lambda x=None: check_queue(ctx, ctx.message.guild.id)) # or "path/to/your.mp3"
+#
+#             embed = discord.Embed(title=f'{search_result.best.result.title} - {search_result.best.result.artists[0].name}',
+#                                   color=0x8c00ff)
+#             embed.set_author(name=f'{search_result.best.result.artists[0].name}',
+#                              icon_url=f'https://{search_result.best.result.artists[0]["cover"].uri.replace("%%", "600x600")}')
+#             embed.add_field(name='Альбом:', value=f'{search_result.best.result.albums[0].title}', inline=False)
+#             embed.add_field(name='Год выпуска:', value=f'{search_result.best.result.albums[0].year}', inline=False)
+#             # print(f'{search_result.best.result.cover_uri}, {search_result.best.result}')
+#
+#             if search_result.best.result.cover_uri == None:
+#                 embed.set_image(url=f'https://music.yandex.ru/blocks/meta/i/og-image.png')
+#             else:
+#                 embed.set_image(url=f'https://{search_result.best.result.cover_uri.replace("%%", "600x600")}')
+#
+#             embed.set_footer(text="Никогда не используйте ’ в запросах!")
+#             await ctx.send(embed=embed)
+#
+#             audio = MP3(f'{path}/{song}')
+#             await asyncio.sleep(audio.info.length)
+#             print(0)
+
+
 # Развлекательный бот с мини-играми, высококачественной музыкой от Яндекс Музыки и голосовым управлением
-bot.run(settings['token'])  # Обращаемся к словарю settings с ключом token, для получения токена
+bot.run(settings['token'])   # Обращаемся к словарю settings с ключом token, для получения токена
