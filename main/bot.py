@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+from pytube import YouTube
 import random
 import traceback
 from deep_translator import GoogleTranslator
@@ -14,7 +15,7 @@ from discord import FFmpegPCMAudio
 from discord.ext import commands
 from discord.utils import get
 from discord_buttons_plugin import *
-
+from mutagen.mp3 import MP3
 # from discord.ext.audiorec import NativeVoiceClient
 from bulls_and_cows import bulls_and_cows
 from config import settings
@@ -24,6 +25,7 @@ client = ClientAsync()
 client.init()
 client = Client(settings['token_ya'])
 logging.basicConfig(level=logging.INFO)
+f = False
 
 try:
     import os
@@ -62,6 +64,21 @@ bot_queue = []
 #     """Joins a voice channel"""
 #     voice(ctx)
 #####################################################
+def tr(c):
+    a = {'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ё': 'E', 'Ж': 'Zh',
+         'З': 'Z', 'И': 'I', 'Й': 'I', 'К': 'K', 'Л': 'L', 'М': 'M', 'Н': 'N', 'О': 'O',
+         'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U', 'Ф': 'F', 'Х': 'Kh', 'Ц': 'Tc',
+         'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Shch', 'Ы': 'Y', 'Э': 'E', 'Ю': 'Iu', 'Я': 'Ia',
+         ' ': '_', 'Ь': '', 'Ъ': ''}
+    b = []
+    for i in c:
+        if i not in a and i.upper() in a:
+            b.append(a[i.upper()].lower())
+        elif i in a:
+            b.append(a[i])
+        else:
+            b.append(i)
+    return ''.join(b)
 
 
 def check_queue(ctx, id):
@@ -78,10 +95,101 @@ async def on_ready():
     await bot.change_presence(status=discord.Status.online,
                               activity=discord.Activity(type=discord.ActivityType.listening, name='!help'))
     # DiscordComponents(bot)
+@bot.command()
+async def join(ctx: commands.Context):
+    """Joins a voice channel"""
+    def convert_tuple(c_tuple):
+        str = ' '.join(c_tuple)
+        return str
+
+    channel: discord.VoiceChannel = ctx.author.voice.channel  # type: ignore
+    if ctx.voice_client is not None:
+        return await ctx.voice_client.move_to(channel)
+
+    await channel.connect(cls=NativeVoiceClient)
+    f = True
+    # await ctx.invoke(bot.get_command('leave'))
+    # await ctx.invoke(bot.get_command('play'), arg='abcdefu')
+
+    while True:
+
+        ctx.voice_client.record(lambda e: print(f"Exception: {e}"))
+        # await ctx.send(f'Start Recording')
+        await asyncio.sleep(10)
+        wav_bytes = await ctx.voice_client.stop_record()
+        # await ctx.send(f'Stop Recording')
+        f = open("rec.txt")
+        lines = f.readlines()
+        try:
+            os.remove('myfile.wav')
+        except:
+            pass
+        lines = ['включи песню abcdefu']
+        # print(lines[0])
+        # lines = ['включи песню трава у дома']
+        # print('быки' or 'коровы' in lines[0])
+        if 'быки' in lines[0].lower() or 'коровы' in lines[0].lower():
+            await ctx.invoke(bot.get_command('bc'))
+        if 'справка' in lines[0].lower():
+            await ctx.invoke(bot.get_command('help'))
+        if 'покажи' in lines[0].lower() and 'мем' in lines[0].lower():
+            await ctx.invoke(bot.get_command('meme'))
+        if 'чарты' in lines[0].lower() and 'включи' not in lines[0].lower():
+            await ctx.invoke(bot.get_command('chart'))
+        if 'включи' in lines[0].lower() and 'песню' in lines[0].lower():
+
+            await ctx.invoke(bot.get_command('leave'))
+            name = convert_tuple(' '.join(lines[0].split(' ')[lines[0].split(' ').index('песню') + 1:]))
+            print(name)
+            search_result = client.search(name)
+            try:
+                print(f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}')
+                client.tracks([f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}'])[0].download(
+                    os.path.join(f'{path}/{song}'))
+            except Exception as e:
+                await ctx.send(traceback.format_exc())
+            print('скачал трек')
+
+            if ctx.author.voice:
+                channel = ctx.message.author.voice.channel
+                # try:
+
+                voice = await channel.connect()
+                print(voice)
+                print('пришёл в гс')
+                voice = ctx.voice_client
+                source = FFmpegPCMAudio(os.path.join(f'{path}/{song}'))
+                voice.play(source, after=lambda x=0: check_queue(ctx, ctx.message.guild.id))
+                print('начал проигрывать песню')
+                # except:
+                #     print('ошибка в 123 строке')
+            else:
+                await ctx.send("You are not in a voice channel, you must be in a voice channel to run this command!")
+            # player = voice.play(source, after=lambda x=None: check_queue(ctx, ctx.message.guild.id)) # or "path/to/your.mp3"
+
+            embed = discord.Embed(title=f'{search_result.best.result.title} - {search_result.best.result.artists[0].name}',
+                                  color=0x8c00ff)
+            embed.set_author(name=f'{search_result.best.result.artists[0].name}',
+                             icon_url=f'https://{search_result.best.result.artists[0]["cover"].uri.replace("%%", "600x600")}')
+            embed.add_field(name='Альбом:', value=f'{search_result.best.result.albums[0].title}', inline=False)
+            embed.add_field(name='Год выпуска:', value=f'{search_result.best.result.albums[0].year}', inline=False)
+            # print(f'{search_result.best.result.cover_uri}, {search_result.best.result}')
+
+            if search_result.best.result.cover_uri == None:
+                embed.set_image(url=f'https://music.yandex.ru/blocks/meta/i/og-image.png')
+            else:
+                embed.set_image(url=f'https://{search_result.best.result.cover_uri.replace("%%", "600x600")}')
+
+            embed.set_footer(text="Никогда не используйте ’ в запросах!")
+            await ctx.send(embed=embed)
+
+            audio = MP3(f'{path}/{song}')
+            await asyncio.sleep(audio.info.length)
+            print(0)
 
 
 @bot.command()
-async def play(ctx, *arg):
+async def play(ctx, arg):
     def convert_tuple(c_tuple):
         str = ' '.join(c_tuple)
         return str
@@ -203,7 +311,6 @@ async def play(ctx, *arg):
 
         embed.set_footer(text="Никогда не используйте ’ в запросах!")
         # await ctx.send(embed=embed)
-
         await buttons.send(
             embed=embed,
             channel=ctx.channel.id,
@@ -460,6 +567,7 @@ async def resume_button(ctx):
 
 @buttons.click
 async def stop_button(ctx):
+
     await ctx.reply("Музыка остановлена!")
     voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     voice.stop()
@@ -509,6 +617,7 @@ async def stop(ctx):
     voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     voice.stop()
     await ctx.voice_client.disconnect()
+    await ctx.invoke(bot.get_command('join'))
     # await ctx.send('Нет песни на паузе')
 
 
@@ -620,37 +729,6 @@ async def leave(ctx):
     await ctx.voice_client.disconnect()
 
 
-@bot.command()
-async def join(ctx: commands.Context):
-    """Joins a voice channel"""
-
-    channel: discord.VoiceChannel = ctx.author.voice.channel  # type: ignore
-    if ctx.voice_client is not None:
-        return await ctx.voice_client.move_to(channel)
-
-    await channel.connect(cls=NativeVoiceClient)
-    while True:
-        ctx.voice_client.record(lambda e: print(f"Exception: {e}"))
-        # await ctx.send(f'Start Recording')
-        await asyncio.sleep(5)
-        wav_bytes = await ctx.voice_client.stop_record()
-        # await ctx.send(f'Stop Recording')
-        f = open("rec.txt")
-        lines = f.readlines()
-        try:
-            os.remove('myfile.wav')
-        except:
-            pass
-        print(lines[0])
-        # print('быки' or 'коровы' in lines[0])
-        if 'быки' in lines[0].lower() or 'коровы' in lines[0].lower():
-            await ctx.invoke(bot.get_command('bc'))
-        if 'справка' in lines[0].lower():
-            await ctx.invoke(bot.get_command('help'))
-        if 'покажи' in lines[0].lower() and 'мем' in lines[0].lower():
-            await ctx.invoke(bot.get_command('meme'))
-        if 'поставь песню' in lines[0].lower():
-            await ctx.invoke(bot.get_command('play'), arg='abc')
 
 l = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
 @bot.command()
@@ -786,6 +864,183 @@ async def film(ctx, *kino):
 
     await ctx.send(embed=embed)
 
+f = ''
+
+@bot.command()
+async def wn(ctx, *c):
+    global f
+    f = c
+    region = tr(' '.join(c))
+    html = requests.get(f'https://pogoda.mail.ru/prognoz/{region}/').text
+    r = 0
+    soup = BeautifulSoup(html, 'html.parser')
+    find_text = str(soup.find('h1', {'class': 'information__header__left__place__city'}))
+    city = find_text.split('>')[1].split('<')[0]
+    find_text = str(soup.find('div', {'class': 'information__header__left__date'}))
+    date = find_text.split('>')[1].split('<')[0][7:-6]
+    find_text = str(soup.find('div', {'class': 'information__content__temperature'}))
+    temp = find_text.split(' ')[-1].split('span>')[1].split("<")[0][:-8]
+    sost = find_text.split('="')[-1].split('">')[0]
+    find_text = str(soup.find('div', {'class': 'information__content__additional__item'}))
+    ohyh = find_text.split('e="')[1].split('">')[0].split(' ')[-1]
+    find_text = str(soup.findAll('div', {'class': 'information__content__additional__item'}))
+    dav = find_text.split('e="')[2 + r].split('">')[0].split(': ')[1]
+    if dav == temp:
+        r = 1
+    dav = find_text.split('e="')[2 + r].split('">')[0].split(': ')[1]
+    vlag = find_text.split('e="')[3 + r].split('">')[0].split(': ')[1]
+    veter = find_text.split('e="')[4 + r].split('">')[0].split(': ')[1]
+    ulfil = find_text.split('e="')[5 + r].split('">')[0].split(': ')[1]
+    find_text = str(soup.findAll('div', {'class': 'information__content__additional__item__sun'}))
+    sunup = ''
+    sundown = ''
+    try:
+        sunup = find_text.split('e="')[1].split('">')[0].split(': ')[1]
+        sundown = find_text.split('e="')[2].split('">')[0].split(': ')[1]
+    except:
+        pass
+    # print(temp, ohyh, sost, dav, vlag, veter, ulfil, )
+    embed = discord.Embed(title=city, description=date,
+                          color=0x7289da)
+    embed.add_field(name='Температура:', value=temp, inline=True)
+    embed.add_field(name='Но ощущается как:', value=ohyh, inline=True)
+    embed.add_field(name='Состояние:', value=sost, inline=False)
+    embed.add_field(name='Давление:', value=dav, inline=True)
+    embed.add_field(name='Влажность:', value=vlag, inline=False)
+    embed.add_field(name='Ветер:', value=veter, inline=True)
+    embed.add_field(name='Индекс ультрафиолета:', value=ulfil, inline=False)
+    if sunup != '':
+        embed.add_field(name='Восход:', value=sunup, inline=True)
+        embed.add_field(name='Закат:', value=sundown, inline=True)
+    embed.set_footer(text="Никогда не используйте ’ в запросах!")
+
+    await buttons.send(
+        embed=embed,
+        channel=ctx.channel.id,
+        components=[
+            ActionRow([
+                Button(
+                    label="Погода на завтра 🌥",
+                    style=ButtonType().Primary,
+                    custom_id="next_button"
+                )
+            ])
+        ]
+    )
+
+
+
+@buttons.click
+async def next_button(ctx):
+    global f
+    region = tr(' '.join(f))
+    html = requests.get(f'https://pogoda.mail.ru/prognoz/{region}/14dney/#day2').text
+    soup = BeautifulSoup(html, 'html.parser')
+    find_text = str(soup.findAll('div', {'class': 'day__temperature'}))
+    temp = find_text.split('e">')[7].split('</')[0]
+    find_text = str(soup.findAll('div', {'class': 'day__description'}))
+    ohyh = ''.join(find_text.split('e="')[14].split('">')[0].split(' ')[2:])
+    sost = find_text.split('e="')[15].split('">')[0]
+    find_text = str(soup.findAll('div', {'class': 'day__additional'}))
+    dav = ' '.join(find_text.split('e="')[31].split('">')[0].split(' ')[1:])
+    vlag = ' '.join(find_text.split('e="')[32].split('">')[0].split(' ')[1:])
+    veter = ' '.join(find_text.split('e="')[33].split('">')[0].split(' ')[1:])
+    ulfil = ' '.join(find_text.split('e="')[34].split('">')[0].split(' ')[2:])
+    find_text = str(soup.findAll('div', {'class': 'history-meteo__info'}))
+    sunup = find_text.split('\n\t\t\t\t\t\t\t\t\t\t\t\t')[5].split('\n\t')[0]
+    sundown = find_text.split('\n\t\t\t\t\t\t\t\t\t\t\t\t')[6].split('\n\t')[0]
+    find_text = str(soup.findAll('div', {'class': 'heading heading_minor heading_line'}))
+    date = find_text.split('e">')[2].split('\t')[-1].split(' <s')[0][1:]
+    html = requests.get(f'https://pogoda.mail.ru/prognoz/{region}/').text
+    soup = BeautifulSoup(html, 'html.parser')
+    find_text = str(soup.find('h1', {'class': 'information__header__left__place__city'}))
+    city = find_text.split('>')[1].split('<')[0]
+    embed = discord.Embed(title=city, description=date,
+                          color=0x0084ff)
+    embed.add_field(name='Температура:', value=temp, inline=True)
+    embed.add_field(name='Но ощущается как:', value=ohyh, inline=True)
+    embed.add_field(name='Состояние:', value=sost, inline=False)
+    embed.add_field(name='Давление:', value=dav, inline=True)
+    embed.add_field(name='Влажность:', value=vlag, inline=False)
+    embed.add_field(name='Ветер:', value=veter, inline=True)
+    embed.add_field(name='Индекс ультрафиолета:', value=ulfil, inline=False)
+    if sunup != '':
+        embed.add_field(name='Восход:', value=sunup, inline=True)
+        embed.add_field(name='Закат:', value=sundown, inline=True)
+    embed.set_footer(text="Никогда не используйте ’ в запросах!")
+
+    await buttons.send(
+        embed=embed,
+        channel=ctx.channel.id,
+        components=[
+        ]
+    )
+
+
+
+ff = ''
+
+@bot.command()
+async def news(ctx, *c):
+    global ff
+    html = requests.get(f'https://news.mail.ru/?').text
+    soup = BeautifulSoup(html, 'html.parser')
+    find_text = str(soup.findAll('a', {'class': 'list__text'}))
+    news = {}
+    for i in find_text.split('"'):
+        if 'http' in i:
+            news[find_text.split('"')[find_text.split('"').index(i) + 1][1:-15]] = i
+    pnews = {}
+    find_text = str(soup.findAll('a', {'class': 'newsitem__title link-holder'}))
+    pnews[find_text.split('href="')[1].split('"><')[0]] = find_text.split('ner">')[1].split('</span')[0]
+    find_text = str(soup.findAll('a', {'class': 'link link_flex'}))
+    for i in find_text.split('"'):
+        if 'http' in i:
+            pnews[find_text.split('"')[find_text.split('"').index(i) + 3][1:-22]] = i
+
+    for i in pnews:
+        if 'http' in i:
+            a = i
+
+    del pnews[a]
+    b = []
+    for i in news:
+        b.append(f'{i} ([подробнее]({news[i]}))\n\n')
+    b = ''.join(b)
+    embed = discord.Embed(title='Последние новости!', description=b,
+                          color=0xf5cc00)
+    await buttons.send(
+        embed=embed,
+        channel=ctx.channel.id,
+        components=[
+            ActionRow([
+                Button(
+                    label="▶ Больше новостей ◀",
+                    style=ButtonType().Primary,
+                    custom_id="more_button"
+                )
+            ])
+        ]
+    )
+
+    b = []
+    for i in pnews:
+        b.append(f'{i} ([подробнее]({pnews[i]}))\n\n')
+    b = ''.join(b)
+    embed = discord.Embed(title='Последние новости!', description=b,
+                          color=0xf5cc00)
+    ff = embed
+
+
+@buttons.click
+async def more_button(ctx):
+    global ff
+    await buttons.send(
+        embed=ff,
+        channel=ctx.channel.id,
+        components=[
+        ]
+    )
 
 # Развлекательный бот с мини-играми, высококачественной музыкой от Яндекс Музыки и голосовым управлением
 bot.run(settings['token'])  # Обращаемся к словарю settings с ключом token, для получения токена
