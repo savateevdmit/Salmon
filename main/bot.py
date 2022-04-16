@@ -1591,7 +1591,7 @@ async def nim(ctx):
                                       color=0xd1ff52)
                 embed.add_field(name='\u200b', value=f'**🔸Я взял {x} {word2.make_agree_with_number(x).word}**',
                                 inline=True)
-                embed.add_field(name=f'🔸Из {1} кучи', value=f'------------------------', inline=False)
+                embed.add_field(name=f'🔸Из единственной кучи', value=f'------------------------', inline=False)
                 # embed.add_field(name='------------------------', value='\u200b', inline=False)
                 embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
                 embed.add_field(name='🏆Я выиграл!', value=f'А ты нет :)', inline=False)
@@ -1602,7 +1602,7 @@ async def nim(ctx):
                                       color=0xd1ff52)
                 embed.add_field(name='\u200b', value=f'**🔸Я взял {x} {word2.make_agree_with_number(x).word}**',
                                 inline=True)
-                embed.add_field(name=f'🔸Из {1} кучи', value=f'------------------------', inline=False)
+                embed.add_field(name=f'🔸Из единственной кучи', value=f'------------------------', inline=False)
                 # embed.add_field(name='------------------------', value='\u200b', inline=False)
                 embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
                 await ctx.send(embed=embed)
@@ -1612,6 +1612,10 @@ async def nim(ctx):
                     SelectOption(label='2', value='2'),
                     SelectOption(label='3', value='3')
                 ]
+                if a == 2:
+                    options = options[:-1]
+                if a == 1:
+                    options = options[0]
                 msg = await ctx.send(
                     "Сколько камней хотите взять?",
                     components=[
@@ -1632,10 +1636,10 @@ async def nim(ctx):
                                           color=0xd1ff52)
                     embed.add_field(name='\u200b', value=f'**🔸Ты взял {x} {word2.make_agree_with_number(x).word}**',
                                     inline=True)
-                    embed.add_field(name=f'🔸Из {n} кучи', value=f'------------------------', inline=False)
+                    embed.add_field(name=f'🔸Из единственной кучи', value=f'------------------------', inline=False)
                     # embed.add_field(name='------------------------', value='\u200b', inline=False)
                     embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
-                    embed.add_field(name='🏆Я выиграл!', value=f'А ты нет :)', inline=False)
+                    embed.add_field(name='🏆Ты выиграл!', value=f'А я нет :(', inline=False)
                     await ctx.send(embed=embed)
                     break
                 else:
@@ -1643,7 +1647,7 @@ async def nim(ctx):
                                           color=0xd1ff52)
                     embed.add_field(name='\u200b', value=f'**🔸Ты взял {x} {word2.make_agree_with_number(x).word}**',
                                     inline=True)
-                    embed.add_field(name=f'🔸Из {n} кучи', value=f'------------------------', inline=False)
+                    embed.add_field(name=f'🔸Из единственной кучи', value=f'------------------------', inline=False)
                     # embed.add_field(name='------------------------', value='\u200b', inline=False)
                     embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
                     await ctx.send(embed=embed)
