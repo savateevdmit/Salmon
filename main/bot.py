@@ -1,23 +1,22 @@
-import asyncio
 import logging
 import os
 import random
-
-from dislash import InteractionClient, SelectMenu, SelectOption
 import time
-from discord_components import DiscordComponents, ComponentsBot, Button, Select, SelectOption
-import pymorphy2
-from deep_translator import GoogleTranslator
-from bs4 import BeautifulSoup
-import psycopg2
+# import PyNaCl
 import aiohttp
+import psycopg2
+import pymorphy2
+from bs4 import BeautifulSoup
+from deep_translator import GoogleTranslator
+from discord_buttons_plugin import *
+from discord_components import ButtonStyle
+from discord_components import ComponentsBot, Button, Select, SelectOption
+from dislash import InteractionClient, SelectMenu, SelectOption
 
 import discord
-from discord import FFmpegPCMAudio
-from discord.ext import commands
-from discord_buttons_plugin import *
 from bulls_and_cows import bulls_and_cows
 from config import settings
+from discord import FFmpegPCMAudio
 from yandex_music import ClientAsync, Client
 
 client = ClientAsync()
@@ -51,12 +50,13 @@ DEVELOPERS = ['0891', '0603']
 
 cycles = dict(game=True)
 numbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9']
-bot = commands.Bot(command_prefix=settings['prefix'])
+bot = ComponentsBot("!")
 buttons = ButtonsClient(bot)
 bot.remove_command('help')
 queues = {}
 music_id = []
 bot_queue = []
+news2 = ''
 
 xod = True
 a, b, c = 0, 0, 0
@@ -74,7 +74,7 @@ try:
     # display the PostgreSQL database server version
     result = cur2.fetchall()
     for i in result:
-        DONATE.append(f'{i[0]}')
+        DONATE.append(i)
     con.commit()
     cur2.close()
 except Exception as error:
@@ -84,6 +84,7 @@ finally:
     if con is not None:
         con.close()
         print('Database connection closed.')
+
 
 ####################################################
 # ТУТ ГОЛОСОВОЕ УПРАВЛЕНИЕ:
@@ -118,7 +119,6 @@ def tr(c):
         else:
             b.append(i)
     return ''.join(b)
-
 
 
 @bot.event
@@ -235,7 +235,7 @@ async def play(ctx, *arg):
             # except:
             #     print('ошибка в 123 строке')
         else:
-            await ctx.send("You are not in a voice channel, you must be in a voice channel to run this command!")
+            await ctx.send("Зайдите в любой голосовой канал, чтобы использовать эту команду!")
         # player = voice.play(source, after=lambda x=None: check_queue(ctx, ctx.message.guild.id)) # or "path/to/your.mp3"
 
         embed = discord.Embed(title=f'{search_result.best.result.title} - {search_result.best.result.artists[0].name}',
@@ -357,6 +357,7 @@ async def play_chart(ctx):
 
             else:
                 if ctx.voice_client.is_playing():
+                    await ctx.send(f'{ctx.message.author.mention}, поставил в очередь!')
                     music_id.append(f'{track.track_id}')
                     song1 = f'{str(len(music_id))}.mp3'
                     source = FFmpegPCMAudio(f'{path}/{song1}')
@@ -399,7 +400,7 @@ async def play_chart(ctx):
             # except:
             #     print('ошибка в 123 строке')
         else:
-            await ctx.send("You are not in a voice channel, you must be in a voice channel to run this command!")
+            await ctx.send("Зайдите в любой голосовой канал, чтобы использовать эту команду!")
 
         # voice.play(source, after=lambda x=0: check_queue(ctx, ctx.message.guild.id))
         search_result = client.search(track_text)
@@ -449,47 +450,95 @@ async def play_chart(ctx):
 @bot.command()
 async def dw(ctx, *arg):
     author = ctx.message.author
-    if author.discriminator in DONATE:
-        def convert_tuple(c_tuple):
-            str = ' '.join(c_tuple)
-            return str
+    con = None
+    DONATE.clear()
+    count = 0
+    try:
+        con = psycopg2.connect(settings['DATABASE_URL'])
+        cur2 = con.cursor()
+        cur2.execute('select * from donat')
 
-        name = convert_tuple(arg)
-        print(name)
-        search_result = client.search(name)
-        dw_song = f'{search_result.best.result.title}-{search_result.best.result.artists[0].name}.mp3'
-        DW_SONG.append(f'{search_result.best.result.title}-{search_result.best.result.artists[0].name}.mp3')
-        await ctx.send(f'Скачиваю...')
-        try:
-            print(f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}')
-            client.tracks([f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}'])[0].download(
-                os.path.join(f'{path}/{dw_song}'))
-        except Exception as e:
-            pass
-            # await ctx.send(traceback.format_exc())
+        result = cur2.fetchall()
+        for i in result:
+            DONATE.append(i)
+        con.commit()
+        cur2.close()
+    except Exception as error:
+        print('Cause: {}'.format(error))
 
-        embed = discord.Embed(title=f'{search_result.best.result.title} - {search_result.best.result.artists[0].name}',
-                              color=0x8c00ff)
-        embed.set_author(name=f'{search_result.best.result.artists[0].name}',
-                         icon_url=f'https://{search_result.best.result.artists[0]["cover"].uri.replace("%%", "600x600")}')
-        embed.add_field(name='Альбом:', value=f'{search_result.best.result.albums[0].title}', inline=False)
-        embed.add_field(name='Год выпуска:', value=f'{search_result.best.result.albums[0].year}', inline=False)
+    finally:
+        if con is not None:
+            con.close()
+            print('Database connection closed.')
 
-        if search_result.best.result.cover_uri == None:
-            embed.set_image(url=f'https://music.yandex.ru/blocks/meta/i/og-image.png')
-        else:
-            embed.set_image(url=f'https://{search_result.best.result.cover_uri.replace("%%", "600x600")}')
+    for i in DONATE:
+        if author.discriminator in i[0]:
+            seconds = time.time()
+            if int(i[1]) + 2678400 > int(seconds):
+                def convert_tuple(c_tuple):
+                    str = ' '.join(c_tuple)
+                    return str
 
-        embed.set_footer(text="Никогда не используйте ’ в запросах!")
+                name = convert_tuple(arg)
+                print(name)
+                search_result = client.search(name)
+                dw_song = f'{search_result.best.result.title}-{search_result.best.result.artists[0].name}.mp3'
+                DW_SONG.append(f'{search_result.best.result.title}-{search_result.best.result.artists[0].name}.mp3')
+                await ctx.send(f'Скачиваю...')
+                try:
+                    print(f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}')
+                    client.tracks([f'{search_result.best.result.id}:{search_result.best.result.albums[0].id}'])[
+                        0].download(
+                        os.path.join(f'{path}/{dw_song}'))
+                except Exception as e:
+                    pass
+                    # await ctx.send(traceback.format_exc())
 
-        await ctx.send(f'{author.mention}, отправил в Личные сообщения')
-        await author.send(embed=embed)
-        await author.send(file=discord.File(f'{path}/{"".join(DW_SONG)}'))
+                embed = discord.Embed(
+                    title=f'{search_result.best.result.title} - {search_result.best.result.artists[0].name}',
+                    color=0x8c00ff)
+                embed.set_author(name=f'{search_result.best.result.artists[0].name}',
+                                 icon_url=f'https://{search_result.best.result.artists[0]["cover"].uri.replace("%%", "600x600")}')
+                embed.add_field(name='Альбом:', value=f'{search_result.best.result.albums[0].title}', inline=False)
+                embed.add_field(name='Год выпуска:', value=f'{search_result.best.result.albums[0].year}', inline=False)
 
-        os.remove(f'{path}/{"".join(DW_SONG)}')
-        DW_SONG.clear()
-    else:
-        await ctx.send(f'{author.mention}, Для выполнения этой команды требуется **Премиум!**')
+                if search_result.best.result.cover_uri == None:
+                    embed.set_image(url=f'https://music.yandex.ru/blocks/meta/i/og-image.png')
+                else:
+                    embed.set_image(url=f'https://{search_result.best.result.cover_uri.replace("%%", "600x600")}')
+
+                embed.set_footer(text="Никогда не используйте ’ в запросах!")
+
+                await ctx.send(f'{author.mention}, отправил вам в ЛС')
+                await author.send(embed=embed)
+                await author.send(file=discord.File(f'{path}/{"".join(DW_SONG)}'))
+
+                os.remove(f'{path}/{"".join(DW_SONG)}')
+                DW_SONG.clear()
+
+            else:
+                con = None
+                try:
+                    con = psycopg2.connect(settings['DATABASE_URL'])
+                    cur2 = con.cursor()
+                    cur2.execute(f"""delete from donat where discriminator = '{author.discriminator}'""")
+                    con.commit()
+                    cur2.close()
+                except Exception as error:
+                    print('Cause: {}'.format(error))
+
+                finally:
+                    if con is not None:
+                        con.close()
+                        print('Database connection closed.')
+
+                await ctx.send(
+                    f'{author.mention}, Срок действия подписки уже истёк 😢, напишите `!pro`, чтобы продлить её.')
+        elif author.discriminator not in i[0]:
+            count += 1
+
+    if count >= len(DONATE):
+        await ctx.send(f'{author.mention}, Для выполнения этой команды требуется **👑Salmon-pro**.')
 
 
 @buttons.click
@@ -497,7 +546,7 @@ async def pause_button(ctx):
     voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if voice.is_playing():
         voice.pause()
-        await ctx.reply("Поставил на паузу!")
+        # await ctx.reply("Поставил на паузу!")
     else:
         await ctx.send('Нечего ставить на паузу')
 
@@ -507,7 +556,7 @@ async def resume_button(ctx):
     voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if voice.is_paused():
         voice.resume()
-        await ctx.reply("Возобновил проигрывание!")
+        # await ctx.reply("Возобновил проигрывание!")
     else:
         await ctx.reply('Нет песни на паузе')
 
@@ -531,7 +580,7 @@ async def skip_button(ctx):
 async def queue(ctx):
     if len(bot_queue) == 0:
         await ctx.send('В очереди ничего нет')
-    embed = discord.Embed(title='Очередь музыки:',
+    embed = discord.Embed(title='🥁Очередь музыки:',
                           color=0xf37944)
     embed.add_field(name='\u200b', value='\n'.join(bot_queue), inline=False)
     # embed.set_footer(text="Никогда не используйте ’ в запросах!")
@@ -559,7 +608,7 @@ async def resume(ctx):
 
 @bot.command()
 async def stop(ctx):
-    await ctx.reply("Музыка остановлена!")
+    # await ctx.reply("Музыка остановлена!")
     voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     voice.stop()
     await ctx.voice_client.disconnect()
@@ -653,13 +702,43 @@ async def help(ctx):
 
     embed.set_author(name='📒 Справкa')
 
-    embed.add_field(name='`!play`', value='Проигрывание музыки', inline=True)
-    embed.add_field(name='`!stop`', value='Остановка музыки', inline=True)
-    embed.add_field(name='`!join`', value='Присоединение бота к голосовому каналу', inline=True)
-    embed.add_field(name='`!bc`', value='Запуск игры "Быки и коровы"', inline=True)
-    embed.add_field(name='`!meme`', value='Показ рандомного мема из интернета', inline=True)
-    embed.add_field(name='`!logo`', value='Угадывание названия компании по логотипу на время', inline=True)
-    embed.add_field(name='`!stop game`', value='Остановка игры', inline=True)
+    embed.add_field(name='\u200b', value='**🎧Музыка**', inline=False)
+    embed.add_field(name='`!play (название музыки)`', value='Проиграет указанную музыку', inline=True)
+    embed.add_field(name='`!chart`', value='Покажет топ-10 песен из чарта Яндекс Музыки', inline=True)
+    embed.add_field(name='\u200b', value='\u200b', inline=False)
+    embed.add_field(name='👑`!dw (название песни)`', value='Скачает абсолютно любую музыку', inline=True)
+    embed.add_field(name='`!play_chart`', value='Проиграет песни из чарта   Яндекс Музыки ', inline=True)
+    embed.add_field(name='\u200b', value='\u200b', inline=False)
+    embed.add_field(name='`!queue`', value='Выведет очередь музыки', inline=True)
+
+    embed.add_field(name='\u200b', value='**🍿Фильмы**', inline=False)
+    embed.add_field(name='`!film (фильм)`', value='Покажет информацию о фильме, а также скинет\
+     ссылку на его просмотр на Кинопоиске', inline=True)
+
+    embed.add_field(name='\u200b', value='**🎲Мини-игры🎲**', inline=False)
+    embed.add_field(name='`!bc`', value='Поиграет с вами в "Быки и коровы" - игру, в \
+    ходе которой вы должены определить, какое число я задумал.', inline=True)
+    embed.add_field(name='`!logo`', value='Поиграет в "угадайку" названия компании по логотипу', inline=True)
+    embed.add_field(name='\u200b', value='\u200b', inline=False)
+    embed.add_field(name='`!stop game`', value='Остановка игр', inline=True)
+    embed.add_field(name='`!nim`', value='Сыграет в Ним - игру, в которой есть несколько кучек с камнями, \
+        где ваша цель будет забрать последни камень', inline=True)
+
+    embed.add_field(name='\u200b', value='**🔍Другое**', inline=False)
+    embed.add_field(name='`!info (@<упомяните человека>)`', value='Покажет \
+    краткую информацию об упомянутом человеке.', inline=True)
+    embed.add_field(name='`!wn (город)`', value='Покажет погоду в этом городе сегодня, \
+    также вам будет доступна кнопочка `(Погода на завтра ⛅)`, кликнув по которой, \
+    вы сможете узнать погоду на следующий день в том же городе.', inline=True)
+    embed.add_field(name='\u200b', value='\u200b', inline=False)
+    embed.add_field(name='`!news`', value='Покажет последние новости к этому часу, также вам будет доступна кнопка \n \
+    `(▶ Больше новостей ◀)`, при нажимании на неё бот пришлёт больше новостей.', inline=True)
+    embed.add_field(name='\u200b', value='\u200b', inline=False)
+
+    embed.add_field(name='**👑Salmon pro👑**', value='Подписка на бота с помощью которой, вы сможете **скачивать музыку \
+    буквально в два клика**', inline=False)
+    embed.add_field(name='`!pro`', value='Покажет \
+        подробную информацию о подписке', inline=True)
 
     embed.add_field(name='\u200b',
                     value='Более подробную информацию ищите здесь - https://clck.ru/eAsPG',
@@ -694,7 +773,7 @@ async def film(ctx, *kino):
     picture = f'https:{b}'
     find_text = str(soup.find('h1', {'class': 'firstHeading mw-first-heading'}))
     g = '+'.join(find_text.split('=')[-1].split('>')[-2][:-4].split(' '))
-    x = find_text.split('=')[-1].split('>')[-2][:-4]
+    film_name = find_text.split('=')[-1].split('>')[-2][:-4]
     html = requests.get(f'https://www.kinopoisk.ru/index.php?kp_query={g}').text
     soup = BeautifulSoup(html, 'html.parser')
     find_text = str(soup.findAll('p', {'class': 'name'}))
@@ -708,16 +787,16 @@ async def film(ctx, *kino):
     n = 0
     try:
         for i in d.lower():
-            if i in x.lower():
+            if i in film_name.lower():
                 n += 1
-        k = len(x) / n
+        k = len(film_name) / n
         n = 0
         while k < 0.8:
             d = find_text.split('/')[7 + pp][2:-1]
             for i in d.lower():
-                if i in x.lower():
+                if i in film_name.lower():
                     n += 1
-            k = n / len(x)
+            k = n / len(film_name)
             n = 0
             pp += 10
         o = pp / 10 * 2 - 2
@@ -790,7 +869,7 @@ async def film(ctx, *kino):
             break
     opisanie = GoogleTranslator(source='auto', target='ru').translate(s)
     opisanie = GoogleTranslator(source='auto', target='ru').translate(s)
-    embed = discord.Embed(title=x,
+    embed = discord.Embed(title=f'🍿{film_name}',
                           color=0xbbff29)
     if len(picture1) > 12:
         if cc2 != 0:
@@ -815,7 +894,8 @@ async def logo(ctx):
     if PLAY:
         PLAY = False
         con = None
-        number = random.sample(range(1, 21), 1)
+        number = random.sample(range(1, 60), 1)
+        # number = 56
         count = 0
         word = morph.parse('секунда')[0]
 
@@ -917,7 +997,8 @@ async def add(ctx, arg):
             con = psycopg2.connect(settings['DATABASE_URL'])
             cur = con.cursor()
             cur2 = con.cursor()
-            cur.execute(f"INSERT INTO donat VALUES ('{arg}')")
+            seconds = time.time()
+            cur.execute(f"""INSERT INTO donat VALUES ('{arg}', {seconds})""")
             cur2.execute('select * from donat')
 
             # display the PostgreSQL database server version
@@ -949,7 +1030,9 @@ async def add(ctx, arg):
     else:
         await ctx.send('Эта команда только для разработчиков!')
 
+
 weather = ''
+
 
 @bot.command()
 async def wn(ctx, *c):
@@ -985,84 +1068,61 @@ async def wn(ctx, *c):
     except:
         pass
     # print(temp, ohyh, sost, dav, vlag, veter, ulfil, )
-    embed = discord.Embed(title=city, description=date,
-                          color=0x7289da)
-    embed.add_field(name='Температура:', value=temp, inline=True)
-    embed.add_field(name='Но ощущается как:', value=ohyh, inline=True)
-    embed.add_field(name='Состояние:', value=sost, inline=False)
-    embed.add_field(name='Давление:', value=dav, inline=True)
-    embed.add_field(name='Влажность:', value=vlag, inline=False)
-    embed.add_field(name='Ветер:', value=veter, inline=True)
-    embed.add_field(name='Индекс ультрафиолета:', value=ulfil, inline=False)
-    if sunup != '':
-        embed.add_field(name='Восход:', value=sunup, inline=True)
-        embed.add_field(name='Закат:', value=sundown, inline=True)
-    embed.set_footer(text="Никогда не используйте ’ в запросах!")
-
-    await buttons.send(
-        embed=embed,
-        channel=ctx.channel.id,
-        components=[
-            ActionRow([
-                Button(
-                    label="Погода на завтра 🌥",
-                    style=ButtonType().Primary,
-                    custom_id="next_button"
-                )
-            ])
-        ]
-    )
-
-
-
-
-@buttons.click
-async def next_button(ctx):
-    global weather
-    region = tr(' '.join(weather))
-    html = requests.get(f'https://pogoda.mail.ru/prognoz/{region}/14dney/#day2').text
-    soup = BeautifulSoup(html, 'html.parser')
-    find_text = str(soup.findAll('div', {'class': 'day__temperature'}))
-    temp = find_text.split('e">')[7].split('</')[0]
-    find_text = str(soup.findAll('div', {'class': 'day__description'}))
-    ohyh = ''.join(find_text.split('e="')[14].split('">')[0].split(' ')[2:])
-    sost = find_text.split('e="')[15].split('">')[0]
-    find_text = str(soup.findAll('div', {'class': 'day__additional'}))
-    dav = ' '.join(find_text.split('e="')[31].split('">')[0].split(' ')[1:])
-    vlag = ' '.join(find_text.split('e="')[32].split('">')[0].split(' ')[1:])
-    veter = ' '.join(find_text.split('e="')[33].split('">')[0].split(' ')[1:])
-    ulfil = ' '.join(find_text.split('e="')[34].split('">')[0].split(' ')[2:])
-    find_text = str(soup.findAll('div', {'class': 'history-meteo__info'}))
-    sunup = find_text.split('\n\t\t\t\t\t\t\t\t\t\t\t\t')[5].split('\n\t')[0]
-    sundown = find_text.split('\n\t\t\t\t\t\t\t\t\t\t\t\t')[6].split('\n\t')[0]
-    find_text = str(soup.findAll('div', {'class': 'heading heading_minor heading_line'}))
-    date = find_text.split('e">')[2].split('\t')[-1].split(' <s')[0][1:]
-    html = requests.get(f'https://pogoda.mail.ru/prognoz/{region}/').text
-    soup = BeautifulSoup(html, 'html.parser')
-    find_text = str(soup.find('h1', {'class': 'information__header__left__place__city'}))
-    city = find_text.split('>')[1].split('<')[0]
-    embed = discord.Embed(title=city, description=date,
+    embed = discord.Embed(title=f'⛅ {city}', description=f'{date}',
                           color=0x0084ff)
-    embed.add_field(name='Температура:', value=temp, inline=True)
-    embed.add_field(name='Но ощущается как:', value=ohyh, inline=True)
-    embed.add_field(name='Состояние:', value=sost, inline=False)
-    embed.add_field(name='Давление:', value=dav, inline=True)
-    embed.add_field(name='Влажность:', value=vlag, inline=False)
-    embed.add_field(name='Ветер:', value=veter, inline=True)
-    embed.add_field(name='Индекс ультрафиолета:', value=ulfil, inline=False)
+    embed.add_field(name='🌡️ Температура:', value=temp, inline=True)
+    embed.add_field(name='🪁 Но ощущается как:', value=ohyh, inline=True)
+    embed.add_field(name='🌦️ Состояние:', value=sost, inline=False)
+    embed.add_field(name='🩺 Давление:', value=dav, inline=True)
+    embed.add_field(name='💧 Влажность:', value=vlag, inline=False)
+    embed.add_field(name='🍃 Ветер:', value=veter, inline=True)
+    embed.add_field(name='☀️ Индекс ультрафиолета:', value=ulfil, inline=False)
     if sunup != '':
-        embed.add_field(name='Восход:', value=sunup, inline=True)
-        embed.add_field(name='Закат:', value=sundown, inline=True)
+        embed.add_field(name='🌅 Восход:', value=sunup, inline=True)
+        embed.add_field(name='🌇 Закат:', value=sundown, inline=True)
     embed.set_footer(text="Никогда не используйте ’ в запросах!")
 
-    await buttons.send(
-        embed=embed,
-        channel=ctx.channel.id,
-        components=[
-        ]
-    )
+    await ctx.send(embed=embed, components=[[Button(label="Погода на завтра ⛅", custom_id="wt", style=ButtonStyle.green)]])
 
-news2 = ''
+    interaction = await bot.wait_for("button_click")
+    if interaction.component.custom_id == 'wt':
+        region = tr(' '.join(weather))
+        html = requests.get(f'https://pogoda.mail.ru/prognoz/{region}/14dney/#day2').text
+        soup = BeautifulSoup(html, 'html.parser')
+        find_text = str(soup.findAll('div', {'class': 'day__temperature'}))
+        temp = find_text.split('e">')[7].split('</')[0]
+        find_text = str(soup.findAll('div', {'class': 'day__description'}))
+        ohyh = ''.join(find_text.split('e="')[14].split('">')[0].split(' ')[2:])
+        sost = find_text.split('e="')[15].split('">')[0]
+        find_text = str(soup.findAll('div', {'class': 'day__additional'}))
+        dav = ' '.join(find_text.split('e="')[31].split('">')[0].split(' ')[1:])
+        vlag = ' '.join(find_text.split('e="')[32].split('">')[0].split(' ')[1:])
+        veter = ' '.join(find_text.split('e="')[33].split('">')[0].split(' ')[1:])
+        ulfil = ' '.join(find_text.split('e="')[34].split('">')[0].split(' ')[2:])
+        find_text = str(soup.findAll('div', {'class': 'history-meteo__info'}))
+        sunup = find_text.split('\n\t\t\t\t\t\t\t\t\t\t\t\t')[5].split('\n\t')[0]
+        sundown = find_text.split('\n\t\t\t\t\t\t\t\t\t\t\t\t')[6].split('\n\t')[0]
+        find_text = str(soup.findAll('div', {'class': 'heading heading_minor heading_line'}))
+        date = find_text.split('e">')[2].split('\t')[-1].split(' <s')[0][1:]
+        html = requests.get(f'https://pogoda.mail.ru/prognoz/{region}/').text
+        soup = BeautifulSoup(html, 'html.parser')
+        find_text = str(soup.find('h1', {'class': 'information__header__left__place__city'}))
+        city = find_text.split('>')[1].split('<')[0]
+        embed = discord.Embed(title=city, description=date,
+                              color=0x0084ff)
+        embed.add_field(name='🌡️ Температура:', value=temp, inline=True)
+        embed.add_field(name='🪁 Но ощущается как:', value=ohyh, inline=True)
+        embed.add_field(name='🌦️ Состояние:', value=sost, inline=False)
+        embed.add_field(name='🩺 Давление:', value=dav, inline=True)
+        embed.add_field(name='💧 Влажность:', value=vlag, inline=False)
+        embed.add_field(name='🍃 Ветер:', value=veter, inline=True)
+        embed.add_field(name='☀️ Индекс ультрафиолета:', value=ulfil, inline=False)
+        if sunup != '':
+            embed.add_field(name='🌅 Восход:', value=sunup, inline=True)
+            embed.add_field(name='🌇 Закат:', value=sundown, inline=True)
+        embed.set_footer(text="Никогда не используйте ’ в запросах!")
+
+        await interaction.send(embed=embed, ephemeral=False)
 
 
 @bot.command()
@@ -1126,7 +1186,6 @@ async def more_button(ctx):
         components=[
         ]
     )
-
 
 
 @bot.command()
@@ -1220,7 +1279,7 @@ async def nim(ctx):
             embed.add_field(name='3 куча:', value=f'{c} {word2.make_agree_with_number(c).word}', inline=True)
         await ctx.send(embed=embed)
         start = False
-    if a != 0 and b!= 0 and c != 0:
+    if a != 0 and b != 0 and c != 0:
         while a != 0 or b != 0 or c != 0:
             x = 0  # количество камней, забираемых из кучи
             n = 0
@@ -1373,7 +1432,8 @@ async def nim(ctx):
                 c -= x
             embed = discord.Embed(title='🪨Ним🪨', description='Мой ход:',
                                   color=0xd1ff52)
-            embed.add_field(name='\u200b', value=f'**🔸Я взял {x} {word2.make_agree_with_number(x).word}**', inline=True)
+            embed.add_field(name='\u200b', value=f'**🔸Я взял {x} {word2.make_agree_with_number(x).word}**',
+                            inline=True)
             embed.add_field(name=f'🔸Из {n} кучи', value=f'------------------------', inline=False)
             # embed.add_field(name='------------------------', value='\u200b', inline=False)
             embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
@@ -1390,10 +1450,10 @@ async def nim(ctx):
             await ctx.send(embed=embed)
             inter_client = InteractionClient(bot)
             options = [
-                            SelectOption(label='1', value='1'),
-                            SelectOption(label='2', value='2'),
-                            SelectOption(label='3', value='3')
-                        ]
+                SelectOption(label='1', value='1'),
+                SelectOption(label='2', value='2'),
+                SelectOption(label='3', value='3')
+            ]
             if a == 0:
                 del options[0]
             if b == 0:
@@ -1445,7 +1505,8 @@ async def nim(ctx):
                 c -= x
             embed = discord.Embed(title='🪨Ним🪨', description='Твой ход:',
                                   color=0xd1ff52)
-            embed.add_field(name='\u200b', value=f'**🔸Ты взял {x} {word2.make_agree_with_number(x).word}**', inline=True)
+            embed.add_field(name='\u200b', value=f'**🔸Ты взял {x} {word2.make_agree_with_number(x).word}**',
+                            inline=True)
             embed.add_field(name=f'🔸Из {n} кучи', value=f'------------------------', inline=False)
             # embed.add_field(name='------------------------', value='\u200b', inline=False)
             embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
@@ -1654,6 +1715,150 @@ async def nim(ctx):
         a = 0
 
 
+@bot.command()
+async def pro(ctx):
+    author = ctx.message.author
+    await ctx.send(f'{author.mention}, отправил информацию вам в ЛС')
+
+    embed = discord.Embed(title='👑 Salmon-pro', color=0xd1ff52)
+    embed.add_field(name='🔰 Описание подписки:', value='С помощью этой подписки \
+                вы сможете без труда \n __скачивать абсолютно любую музыку__, просто напишите боту `!dw (песня)`, \n \
+                и бот __автоматически начнёт поиск и скачивание__, а потом отправит её вам в личные \
+                сообщения. Вся процедура займёт __не более 15 секунд__, что намного быстрее, чем ручной поиск!',
+                    inline=False)
+
+    embed.add_field(name='\u200b', value='\u200b',
+                    inline=False)
+
+    embed.add_field(name='🧮 Тарифы:', value='🔸**1.** На одного человека **НА МЕСЯЦ** - 30р \n \
+                                                        🔸**2**. На сервер с __любым количеством участников__ **НА МЕСЯЦ** - 150р',
+                    inline=False)
+
+    await author.send(
+        embed=embed,
+        components=[
+            Select(
+                placeholder="Выберите тариф",
+                options=[
+                    SelectOption(label="1. На одного человека", value="one"),
+                    SelectOption(label="2. На весь сервер", value="all"),
+                ],
+                custom_id="tarif",
+            )
+        ],
+    )
+
+    interaction = await bot.wait_for(
+        "select_option", check=lambda inter: inter.custom_id == "tarif"
+    )
+    if interaction.values[0] == 'one':
+        embed = discord.Embed(title='👑 Salmon-pro', color=0xd1ff52)
+        embed.add_field(name='💰Подписка для одного человека - 30р', value='\u200b',
+                        inline=False)
+
+        embed.add_field(name='🧾Итого: 30р', value='Выберете способ оплаты и следуйте дальнейшим инструкциям',
+                        inline=False)
+
+        await interaction.send(ephemeral=False, embed=embed)
+
+        msg = await author.send(components=[[Button(label="🪙Юмани", custom_id="yoomoney", style=ButtonStyle.green),
+                                             Button(label="💳Перевод по номеру карты", custom_id="card",
+                                                    style=ButtonStyle.green)]])
+
+        interaction = await bot.wait_for("button_click")
+        if interaction.component.custom_id == 'yoomoney':
+            embed = discord.Embed(title='👑 Salmon-pro', color=0xd1ff52)
+            embed.set_thumbnail(url='http://qrcoder.ru/code/?https%3A%2F%2Fyoomoney.ru%2Fto%2F4100110960641547&4&0')
+            embed.add_field(name='🪙Юмани', value='\u200b',
+                            inline=False)
+
+            embed.add_field(name='❗Обязательно', value=f'Поставьте галочку в строке\
+            `Добавить назначение платежа` и введите туда это - **`{author.discriminator}`**, а \
+                             в строку `Сколько` - 30!',
+                            inline=False)
+            embed.set_footer(text='Если вы хотите поменять способ оплаты, напишите !pro заново')
+
+            await msg.delete()
+            await interaction.send(embed=embed, ephemeral=False)
+            await author.send(components=[
+                [Button(label="🪙Юмани", url='https://yoomoney.ru/to/4100110960641547', style=ButtonStyle.URL)]])
+
+
+        else:
+            embed2 = discord.Embed(title='👑 Salmon-pro', color=0xd1ff52)
+            embed2.add_field(name='💳Перевод по номеру карты', value='\u200b',
+                             inline=False)
+            embed2.set_thumbnail(
+                url='http://qrcoder.ru/code/?https%3A%2F%2Fwww.tinkoff.ru%2Frm%2Fsavateev.dmitriy12%2FJgqwn3240&4&0')
+
+            embed2.add_field(name='❗Обязательно', value=f'Напишите в строке `Сообщение` это - **`{author.discriminator}`**, \
+                             в строке `Сумма` - 30!',
+                             inline=False)
+            embed2.set_footer(text='Если вы хотите поменять способ оплаты, напишите !pro заново')
+
+            await msg.delete()
+            await interaction.send(embed=embed2, ephemeral=False)
+            await author.send(components=[[Button(label="💳Перевод по номеру карты",
+                                                  url='https://www.tinkoff.ru/rm/savateev.dmitriy12/Jgqwn3240',
+                                                  style=ButtonStyle.URL)]])
+
+    else:
+        embed = discord.Embed(title='👑 Salmon-pro', color=0xd1ff52)
+        embed.add_field(name='💰Подписка на сервер - 150р', value='\u200b',
+                        inline=False)
+
+        embed.add_field(name='🧾Итого: 150р', value='Выберете способ оплаты и следуйте дальнейшим инструкциям',
+                        inline=False)
+
+        await interaction.send(ephemeral=False, embed=embed)
+
+        msg = await author.send(components=[[Button(label="🪙Юмани", custom_id="yoomoney", style=ButtonStyle.green),
+                                             Button(label="💳Перевод по номеру карты", custom_id="card",
+                                                    style=ButtonStyle.green)]])
+
+        interaction = await bot.wait_for("button_click")
+        if interaction.component.custom_id == 'yoomoney':
+            embed = discord.Embed(title='👑 Salmon-pro', color=0xd1ff52)
+            embed.set_thumbnail(url='http://qrcoder.ru/code/?https%3A%2F%2Fyoomoney.ru%2Fto%2F4100110960641547&4&0')
+            embed.add_field(name='🪙Юмани', value='\u200b',
+                            inline=False)
+
+            embed.add_field(name='❗Обязательно', value=f'Поставьте галочку в строке\
+                        `Добавить назначение платежа` и введите туда это - **`{ctx.guild.id}`**, а\
+                                         в строку `Сколько` - 150!',
+                            inline=False)
+            embed.set_footer(text='Если вы хотите поменять способ оплаты, напишите !pro заново')
+
+            await msg.delete()
+            await interaction.send(embed=embed, ephemeral=False)
+            await author.send(components=[
+                [Button(label="🪙Юмани", url='https://yoomoney.ru/to/4100110960641547', style=ButtonStyle.URL)]])
+
+        if interaction.component.custom_id == 'card':
+            try:
+                embed2 = discord.Embed(title='👑 Salmon-pro', color=0xd1ff52)
+                embed2.add_field(name='💳Перевод по номеру карты', value='\u200b',
+                                 inline=False)
+                embed2.set_thumbnail(
+                    url='http://qrcoder.ru/code/?https%3A%2F%2Fwww.tinkoff.ru%2Frm%2Fsavateev.dmitriy12%2FJgqwn3240&4&0')
+
+                embed2.add_field(name='❗Обязательно',
+                                 value=f'Напишите в строке `Сообщение` это - **`{ctx.guild.id}`**, \
+                                 в строке `Сумма` - 150!',
+                                 inline=False)
+                embed2.set_footer(text='Если вы хотите поменять способ оплаты, напишите !pro заново')
+
+                await msg.delete()
+                await interaction.send(embed=embed2, ephemeral=False)
+                await author.send(components=[[Button(label="💳Перевод по номеру карты",
+                                                      url='https://www.tinkoff.ru/rm/savateev.dmitriy12/Jgqwn3240',
+                                                      style=ButtonStyle.URL)]])
+
+            except:
+                await author.send(
+                    '❌Пожалуйста, напишите эту команду на сервере, для которого хотите подключить подписку!❌')
+
+        # await interaction2.send(embed=embed2, ephemeral=False)
 
 
 # Развлекательный бот с мини-играми, высококачественной музыкой от Яндекс Музыки и голосовым управлением
