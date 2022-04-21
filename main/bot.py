@@ -3,6 +3,7 @@ import os
 import random
 import time
 from random import choice
+
 # import PyNaCl
 import aiohttp
 import psycopg2
@@ -12,7 +13,7 @@ from deep_translator import GoogleTranslator
 from discord_buttons_plugin import *
 from discord_components import ButtonStyle
 from discord_components import ComponentsBot, Button, Select, SelectOption
-from dislash import InteractionClient, SelectMenu, SelectOption
+from dislash import SelectOption
 
 import discord
 from bulls_and_cows import bulls_and_cows
@@ -46,6 +47,7 @@ path = os.path.join(program_path, 'Songs')
 DW_SONG = []
 DONATE = []
 DONATE1 = []
+DONATE_SERVER = []
 PLAY = True
 DEVELOPERS = ['0891', '0603']
 
@@ -70,14 +72,21 @@ con = None
 try:
     con = psycopg2.connect(settings['DATABASE_URL'])
     cur2 = con.cursor()
+    cur = con.cursor()
     cur2.execute('select * from donat')
+    cur.execute('select * from donat_server')
 
     # display the PostgreSQL database server version
     result = cur2.fetchall()
+    result2 = cur.fetchall()
     for i in result:
         DONATE.append(i)
+
+    # for i in result2:
+    #     DONATE_SERVER.append(i)
     con.commit()
     cur2.close()
+    cur.close()
 except Exception as error:
     print('Cause: {}'.format(error))
 
@@ -107,9 +116,9 @@ def check_queue(ctx, id):
 
 def tr(c):
     a = {'А': 'A', 'Б': 'B', 'В': 'V', 'Г': 'G', 'Д': 'D', 'Е': 'E', 'Ё': 'E', 'Ж': 'Zh',
-         'З': 'Z', 'И': 'I', 'Й': 'I', 'К': 'K', 'Л': 'L', 'М': 'M', 'Н': 'N', 'О': 'O',
+         'З': 'Z', 'И': 'I', 'Й': 'Y', 'К': 'K', 'Л': 'L', 'М': 'M', 'Н': 'N', 'О': 'O',
          'П': 'P', 'Р': 'R', 'С': 'S', 'Т': 'T', 'У': 'U', 'Ф': 'F', 'Х': 'Kh', 'Ц': 'Tc',
-         'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Shch', 'Ы': 'Y', 'Э': 'E', 'Ю': 'Iu', 'Я': 'Ia',
+         'Ч': 'Ch', 'Ш': 'Sh', 'Щ': 'Shch', 'Ы': 'Y', 'Э': 'E', 'Ю': 'Iu', 'Я': 'Ya',
          ' ': '_', 'Ь': '', 'Ъ': ''}
     b = []
     for i in c:
@@ -320,6 +329,7 @@ async def chart(ctx):
 
 @bot.command()
 async def play_chart(ctx):
+    await ctx.send(f'{ctx.message.author.mention}, поставил в очередь!')
     chart = client.chart('world').chart
 
     for track_short in chart.tracks[:10]:
@@ -358,7 +368,6 @@ async def play_chart(ctx):
 
             else:
                 if ctx.voice_client.is_playing():
-                    await ctx.send(f'{ctx.message.author.mention}, поставил в очередь!')
                     music_id.append(f'{track.track_id}')
                     song1 = f'{str(len(music_id))}.mp3'
                     source = FFmpegPCMAudio(f'{path}/{song1}')
@@ -458,9 +467,16 @@ async def dw(ctx, *arg):
         con = psycopg2.connect(settings['DATABASE_URL'])
         cur2 = con.cursor()
         cur2.execute('select * from donat')
+        cur = con.cursor()
+        cur.execute('select * from donat_server')
 
+        result2 = cur.fetchall()
         result = cur2.fetchall()
+
         for i in result:
+            DONATE.append(i)
+
+        for i in result2:
             DONATE.append(i)
         con.commit()
         cur2.close()
@@ -473,7 +489,7 @@ async def dw(ctx, *arg):
             print('Database connection closed.')
 
     for i in DONATE:
-        if author.discriminator in i[0]:
+        if author.discriminator in i[0] or str(ctx.guild.id) in i[0]:
             seconds = time.time()
             if int(i[1]) + 2678400 > int(seconds):
                 def convert_tuple(c_tuple):
@@ -547,7 +563,7 @@ async def pause_button(ctx):
     voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if voice.is_playing():
         voice.pause()
-        # await ctx.reply("Поставил на паузу!")
+        await ctx.reply("Поставил на паузу!")
     else:
         await ctx.send('Нечего ставить на паузу')
 
@@ -557,7 +573,7 @@ async def resume_button(ctx):
     voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     if voice.is_paused():
         voice.resume()
-        # await ctx.reply("Возобновил проигрывание!")
+        await ctx.reply("Возобновил проигрывание!")
     else:
         await ctx.reply('Нет песни на паузе')
 
@@ -581,7 +597,7 @@ async def skip_button(ctx):
 async def queue(ctx):
     if len(bot_queue) == 0:
         await ctx.send('В очереди ничего нет')
-    embed = discord.Embed(title='🥁Очередь музыки:',
+    embed = discord.Embed(title='🥁 Очередь музыки:',
                           color=0xf37944)
     embed.add_field(name='\u200b', value='\n'.join(bot_queue), inline=False)
     # embed.set_footer(text="Никогда не используйте ’ в запросах!")
@@ -609,7 +625,7 @@ async def resume(ctx):
 
 @bot.command()
 async def stop(ctx):
-    # await ctx.reply("Музыка остановлена!")
+    await ctx.reply("Музыка остановлена!")
     voice = discord.utils.get(bot.voice_clients, guild=ctx.guild)
     voice.stop()
     await ctx.voice_client.disconnect()
@@ -637,8 +653,8 @@ async def info(ctx, member: discord.Member = None):
     embed = discord.Embed(color=0xff781f)
     embed.set_author(name=f'{member}', icon_url=f'{member.avatar_url}')
     print(f'{member.avatar_url}')
-    embed.add_field(name='Дата создания:', value=f'{member.created_at}', inline=False)
-    embed.add_field(name='Высшая роль:', value=f'{member.top_role.mention}', inline=False)
+    embed.add_field(name='📆 Дата создания:', value=f'{member.created_at}', inline=False)
+    embed.add_field(name='💥 Высшая роль:', value=f'{member.top_role.mention}', inline=False)
     embed.set_image(url=f'{member.avatar_url}')
 
     await ctx.send(embed=embed)
@@ -724,6 +740,7 @@ async def help(ctx):
     embed.add_field(name='`!stop game`', value='Остановка игр', inline=True)
     embed.add_field(name='`!nim`', value='Сыграет в Ним - игру, в которой есть несколько кучек с камнями, \
         где ваша цель будет забрать последни камень', inline=True)
+    embed.add_field(name='`!ln`', value='Поиграет в отгадывание языка по \n фразе', inline=False)
 
     embed.add_field(name='\u200b', value='**🔍Другое**', inline=False)
     embed.add_field(name='`!info (@<упомяните человека>)`', value='Покажет \
@@ -733,7 +750,7 @@ async def help(ctx):
     вы сможете узнать погоду на следующий день в том же городе.', inline=True)
     embed.add_field(name='\u200b', value='\u200b', inline=False)
     embed.add_field(name='`!news`', value='Покажет последние новости к этому часу, также вам будет доступна кнопка \n \
-    `(▶ Больше новостей ◀)`, при нажимании на неё бот пришлёт больше новостей.', inline=True)
+    `(➕ Больше новостей)`, при нажимании на неё бот пришлёт больше новостей.', inline=True)
     embed.add_field(name='\u200b', value='\u200b', inline=False)
 
     embed.add_field(name='**👑Salmon pro👑**', value='Подписка на бота с помощью которой, вы сможете **скачивать музыку \
@@ -757,141 +774,147 @@ async def leave(ctx):
 @bot.command()
 async def film(ctx, *kino):
     kino = ' '.join([i for i in kino])
-    html = requests.get(
-        f'https://ru.wikipedia.org/w/index.php?search={kino}+фильм&title=Служебная%3AПоиск&go=Перейти&ns0=1').text
-    soup = BeautifulSoup(html, 'html.parser')
-    find_text = str(soup.find('div', {'class': 'mw-search-result-heading'}))
-    a = find_text.split(' ')[3].split('=')[1][1:-1]
-    html = requests.get(f'https://ru.wikipedia.org/{a}').text
-    soup = BeautifulSoup(html, 'html.parser')
-    find_text = str(soup.findAll('span', {'class': 'no-wikidata'}))
-    b = find_text.split(' ')
-    for i in b:
-        if 'src' in i:
-            b = i.split('=')[1][1:-1]
-            break
-    # print(b)
-    picture = f'https:{b}'
-    find_text = str(soup.find('h1', {'class': 'firstHeading mw-first-heading'}))
-    g = '+'.join(find_text.split('=')[-1].split('>')[-2][:-4].split(' '))
-    film_name = find_text.split('=')[-1].split('>')[-2][:-4]
-    html = requests.get(f'https://www.kinopoisk.ru/index.php?kp_query={g}').text
-    soup = BeautifulSoup(html, 'html.parser')
-    find_text = str(soup.findAll('p', {'class': 'name'}))
-    c = find_text.split(' ')
     try:
-        d = find_text.split('/')[7][2:-1]
-    except:
-        ss = f'https://www.kinopoisk.ru/index.php?kp_query={g}'
-    pp = 10
-    k = 0
-    n = 0
-    try:
-        for i in d.lower():
-            if i in film_name.lower():
-                n += 1
-        k = len(film_name) / n
+        html = requests.get(
+            f'https://ru.wikipedia.org/w/index.php?search={kino}+фильм&title=Служебная%3AПоиск&go=Перейти&ns0=1').text
+        soup = BeautifulSoup(html, 'html.parser')
+        find_text = str(soup.find('div', {'class': 'mw-search-result-heading'}))
+        a = find_text.split(' ')[3].split('=')[1][1:-1]
+        html = requests.get(f'https://ru.wikipedia.org/{a}').text
+        soup = BeautifulSoup(html, 'html.parser')
+        find_text = str(soup.findAll('span', {'class': 'no-wikidata'}))
+        b = find_text.split(' ')
+        for i in b:
+            if 'src' in i:
+                b = i.split('=')[1][1:-1]
+                break
+        # print(b)
+        picture = f'https:{b}'
+        find_text = str(soup.find('h1', {'class': 'firstHeading mw-first-heading'}))
+        g = '+'.join(find_text.split('=')[-1].split('>')[-2][:-4].split(' '))
+        film_name = find_text.split('=')[-1].split('>')[-2][:-4]
+        html = requests.get(f'https://www.kinopoisk.ru/index.php?kp_query={g}').text
+        soup = BeautifulSoup(html, 'html.parser')
+        find_text = str(soup.findAll('p', {'class': 'name'}))
+        c = find_text.split(' ')
+        try:
+            d = find_text.split('/')[7][2:-1]
+        except:
+            ss = f'https://www.kinopoisk.ru/index.php?kp_query={g}'
+        pp = 10
+        k = 0
         n = 0
-        while k < 0.8:
-            d = find_text.split('/')[7 + pp][2:-1]
+        try:
             for i in d.lower():
                 if i in film_name.lower():
                     n += 1
-            k = n / len(film_name)
+            k = len(film_name) / n
             n = 0
-            pp += 10
-        o = pp / 10 * 2 - 2
-        for i in c:
-            if i[-2] in numbers and o == 0:
-                c = i.split('=')[1][1:-1]
-                break
-            if i[-2] in numbers:
-                o -= 1
-        ss = f'https://www.kinopoisk.ru/film/{c}/'
-    except Exception as e:
-        print(e)
+            while k < 0.8:
+                d = find_text.split('/')[7 + pp][2:-1]
+                for i in d.lower():
+                    if i in film_name.lower():
+                        n += 1
+                k = n / len(film_name)
+                n = 0
+                pp += 10
+            o = pp / 10 * 2 - 2
+            for i in c:
+                if i[-2] in numbers and o == 0:
+                    c = i.split('=')[1][1:-1]
+                    break
+                if i[-2] in numbers:
+                    o -= 1
+            ss = f'https://www.kinopoisk.ru/film/{c}/'
+        except Exception as e:
+            print(e)
 
-    html = requests.get(f'https://ru.wikipedia.org/{a}').text
-    soup = BeautifulSoup(html, 'html.parser')
-    find_text = str(soup.find('span', {'data-wikidata-property-id': 'P272'}))
-    e = find_text.split(' ')
-    h = []
-    if e[0] == "None":
-        find_text = str(soup.find('div', {'data-wikidata-property-id': 'P272'}))
+        html = requests.get(f'https://ru.wikipedia.org/{a}').text
+        soup = BeautifulSoup(html, 'html.parser')
+        find_text = str(soup.find('span', {'data-wikidata-property-id': 'P272'}))
         e = find_text.split(' ')
-    for i in e:
-        if 'href' in i:
-            h.append(i.split('/')[2][:-1])
-    find_text = str(soup.find('span', {'data-wikidata-property-id': 'P2047'}))
-    time = find_text.split('>')[1].split('<')[0]
-    find_text = str(soup.find('span', {'data-wikidata-property-id': 'P2130'}))
-    budget = find_text
-    try:
-        budget = budget[:budget.index('<a')] + budget[budget.index('a>') + 2:]
-
-    except:
-        pass
-    budget = budget.split('">')[1].split('<sup')[0]
-    find_text = str(soup.find('span', {'data-wikidata-property-id': 'P2142'}))
-    sbori = find_text.split('">')[1].split('<sup')[0]
-    cc1 = h[0]
-    cc2 = 0
-    try:
-        cc2 = h[1]
-    except:
-        pass
-    html = requests.get(f'https://ru.wikipedia.org/wiki/{cc1}').text
-    soup = BeautifulSoup(html, 'html.parser')
-    find_text = str(soup.findAll('span', {'class': 'no-wikidata'}))
-    k = find_text.split(' ')
-    for i in k:
-        if 'src' in i:
-            k = i.split('=')[1][1:-1]
-            break
-    # print(b)
-    picture1 = f'https:{k}'
-    html = requests.get(f'https://ru.wikipedia.org/{a}').text
-    soup = BeautifulSoup(html, 'html.parser')
-    find_text = str(soup.find('span', {'data-wikidata-property-id': 'P345'}))
-    s = find_text.split(' ')
-    for i in s:
-        if 'href' in i:
-            s = i.split('=')[1][1:-1]
-    html = requests.get(s).text
-    soup = BeautifulSoup(html, 'html.parser')
-    find_text = str(soup.find('span', {'class': 'sc-7ab21ed2-1 jGRxWM'}))
-    rating = find_text.split(' ')[-1].split('>')[-2].split('<')[0]
-    find_text = str(soup.find('div', {'class': 'ipc-html-content ipc-html-content--base'}))
-    s = find_text.split('<div>')[1].split('<span')[0]
-    while True:
+        h = []
+        if e[0] == "None":
+            find_text = str(soup.find('div', {'data-wikidata-property-id': 'P272'}))
+            e = find_text.split(' ')
+        for i in e:
+            if 'href' in i:
+                h.append(i.split('/')[2][:-1])
+        find_text = str(soup.find('span', {'data-wikidata-property-id': 'P2047'}))
+        time = find_text.split('>')[1].split('<')[0]
+        find_text = str(soup.find('span', {'data-wikidata-property-id': 'P2130'}))
+        budget = find_text
         try:
-            s = s[:s.index('(')] + s[s.index(')') + 1:]
-        except:
-            break
-    opisanie = GoogleTranslator(source='auto', target='ru').translate(s)
-    opisanie = GoogleTranslator(source='auto', target='ru').translate(s)
-    embed = discord.Embed(title=f'🍿{film_name}',
-                          color=0x1ba300)
-    if len(picture1) > 12:
-        if cc2 != 0:
-            embed.set_author(name=f'{cc1} and {cc2}',
-                             icon_url=picture1)
-        else:
-            embed.set_author(name=cc1,
-                             icon_url=picture1)
-    if len(time) > 1:
-        embed.add_field(name='Длительность:', value=time, inline=False)
-    if len(rating) > 0:
-        embed.add_field(name='IMDb рейтинг:', value=f'{rating}/10', inline=False)
-    if len(opisanie) > 1:
-        embed.add_field(name='Краткое описание:', value=opisanie, inline=False)
-    if len(ss) > 1:
-        embed.add_field(name='Ссылка на просмотр:', value=f'{ss}', inline=False)
-    if len(picture) > 1:
-        embed.set_image(url=picture)
-    embed.set_footer(text="Никогда не используйте ’ в запросах!")
+            budget = budget[:budget.index('<a')] + budget[budget.index('a>') + 2:]
 
-    await ctx.send(embed=embed)
+        except:
+            pass
+        budget = budget.split('">')[1].split('<sup')[0]
+        find_text = str(soup.find('span', {'data-wikidata-property-id': 'P2142'}))
+        sbori = find_text.split('">')[1].split('<sup')[0]
+        cc1 = h[0]
+        cc2 = 0
+        try:
+            cc2 = h[1]
+        except:
+            pass
+        html = requests.get(f'https://ru.wikipedia.org/wiki/{cc1}').text
+        soup = BeautifulSoup(html, 'html.parser')
+        find_text = str(soup.findAll('span', {'class': 'no-wikidata'}))
+        k = find_text.split(' ')
+        for i in k:
+            if 'src' in i:
+                k = i.split('=')[1][1:-1]
+                break
+        # print(b)
+        picture1 = f'https:{k}'
+        html = requests.get(f'https://ru.wikipedia.org/{a}').text
+        soup = BeautifulSoup(html, 'html.parser')
+        find_text = str(soup.find('span', {'data-wikidata-property-id': 'P345'}))
+        s = find_text.split(' ')
+        for i in s:
+            if 'href' in i:
+                s = i.split('=')[1][1:-1]
+        html = requests.get(s).text
+        soup = BeautifulSoup(html, 'html.parser')
+        find_text = str(soup.find('span', {'class': 'sc-7ab21ed2-1 jGRxWM'}))
+        rating = find_text.split(' ')[-1].split('>')[-2].split('<')[0]
+        find_text = str(soup.find('div', {'class': 'ipc-html-content ipc-html-content--base'}))
+        s = find_text.split('<div>')[1].split('<span')[0]
+        while True:
+            try:
+                s = s[:s.index('(')] + s[s.index(')') + 1:]
+            except:
+                break
+    except:
+        await ctx.reply('Я не понял запрос(\nПопробуйте уточнить!')
+    try:
+        opisanie = GoogleTranslator(source='auto', target='ru').translate(s)
+        opisanie = GoogleTranslator(source='auto', target='ru').translate(s)
+        embed = discord.Embed(title=f'🍿{film_name}',
+                              color=0x1ba300)
+        if len(picture1) > 12:
+            if cc2 != 0:
+                embed.set_author(name=f'{cc1} and {cc2}',
+                                 icon_url=picture1)
+            else:
+                embed.set_author(name=cc1,
+                                 icon_url=picture1)
+        if len(time) > 1:
+            embed.add_field(name='Длительность:', value=time, inline=False)
+        if len(rating) > 0:
+            embed.add_field(name='IMDb рейтинг:', value=f'{rating}/10', inline=False)
+        if len(opisanie) > 1:
+            embed.add_field(name='Краткое описание:', value=opisanie, inline=False)
+        if len(ss) > 1:
+            embed.add_field(name='Ссылка на просмотр:', value=f'{ss}', inline=False)
+        if len(picture) > 1:
+            embed.set_image(url=picture)
+        embed.set_footer(text="Никогда не используйте ’ в запросах!")
+
+        await ctx.send(embed=embed)
+    except:
+        await ctx.reply('Возникла непредвиденная ошибка!\nПожалуйста, обратитесь в тех. поддержку!')
 
 
 @bot.command()
@@ -994,37 +1017,95 @@ async def logo(ctx):
 
 
 @bot.command()
-async def add(ctx, arg):
+async def add(ctx, arg, server=False):
     flag = False
     author = ctx.message.author
     if author.discriminator in DEVELOPERS:
         con = None
         try:
-            con = psycopg2.connect(settings['DATABASE_URL'])
-            cur = con.cursor()
-            cur2 = con.cursor()
-            seconds = time.time()
-            cur.execute(f"""INSERT INTO donat VALUES ('{arg}', {seconds})""")
-            cur2.execute('select * from donat')
+            if not server:
+                con = psycopg2.connect(settings['DATABASE_URL'])
+                cur = con.cursor()
+                cur2 = con.cursor()
+                cur3 = con.cursor()
+                seconds = time.time()
+                cur.execute(f"""INSERT INTO donat VALUES ('{arg}', {seconds})""")
+                cur3.execute('select * from donat_server')
+                cur2.execute('select * from donat')
 
-            # display the PostgreSQL database server version
-            result = cur2.fetchall()[:-1]
-            for i in result:
-                DONATE1.append(f'🔹 {i[0]}')
-                if arg in i[0]:
-                    flag = True
-            if flag:
-                await ctx.send(f'❌Ошибка! {arg}, уже был добавлен❌')
-                await ctx.send(f'🔰Список пользователей с премиумом:')
-                await ctx.send('\n'.join(DONATE1))
-            # close the communication with the HerokuPostgres
+                # display the PostgreSQL database server version
+                result = cur2.fetchall()[:-1]
+                result2 = cur3.fetchall()[:-1]
+                for i in result:
+                    DONATE1.append(f'🔹 {i[0]}')
+                    if arg in i[0]:
+                        flag = True
+
+                for i in result2:
+                    DONATE_SERVER.append(f'🔹 {i[0]}')
+                    if arg in i[0]:
+                        flag = True
+                if flag:
+                    await ctx.send(f'❌Ошибка! {arg}, уже был добавлен❌')
+                    await ctx.send(f'🔰Список пользователей с премиумом:')
+                    await ctx.send('\n'.join(DONATE1))
+                    await ctx.send(f'🔰Список серверов с премиумом:')
+                    await ctx.send('\n'.join(DONATE_SERVER))
+                # close the communication with the HerokuPostgres
+                else:
+                    con.commit()
+                    await ctx.send(f'✅{arg}, добавлен✅')
+                    await ctx.send(f'🔰Список пользователей с премиумом:')
+                    await ctx.send('\n'.join(DONATE1))
+                    await ctx.send(f'🔰Список серверов с премиумом:')
+                    await ctx.send('\n'.join(DONATE_SERVER))
+
+                cur.close()
+                cur2.close()
+                # cur3.close()
+
             else:
-                con.commit()
-                await ctx.send(f'✅{arg}, добавлен✅')
-                await ctx.send(f'🔰Список пользователей с премиумом:')
-                await ctx.send('\n'.join(DONATE1))
+                con = psycopg2.connect(settings['DATABASE_URL'])
+                cur = con.cursor()
+                cur2 = con.cursor()
+                cur3 = con.cursor()
+                seconds = time.time()
+                cur3.execute(f"""INSERT INTO donat_server VALUES ('{arg}', {seconds})""")
+                cur2.execute('select * from donat_server')
+                cur.execute('select * from donat')
 
-            cur.close()
+                # display the PostgreSQL database server version
+                result2 = cur2.fetchall()[:-1]
+                result = cur.fetchall()[:-1]
+                for i in result:
+                    DONATE1.append(f'🔹 {i[0]}')
+                    if arg in i[0]:
+                        flag = True
+
+                for i in result2:
+                    DONATE_SERVER.append(f'🔹 {i[0]}')
+                    if arg in i[0]:
+                        flag = True
+
+                if flag:
+                    await ctx.send(f'❌Ошибка! {arg}, уже был добавлен❌')
+                    await ctx.send(f'🔰Список пользователей с премиумом:')
+                    await ctx.send('\n'.join(DONATE1))
+                    await ctx.send(f'🔰Список серверов с премиумом:')
+                    await ctx.send('\n'.join(DONATE_SERVER))
+                # close the communication with the HerokuPostgres
+                else:
+                    con.commit()
+                    await ctx.send(f'✅{arg}, добавлен✅')
+                    await ctx.send(f'🔰Список пользователей с премиумом:')
+                    await ctx.send('\n'.join(DONATE1))
+                    await ctx.send(f'🔰Список серверов с премиумом:')
+                    await ctx.send('\n'.join(DONATE_SERVER))
+
+                cur.close()
+                cur2.close()
+                cur3.close()
+
         except Exception as error:
             print('Cause: {}'.format(error))
 
@@ -1033,6 +1114,7 @@ async def add(ctx, arg):
                 con.close()
                 print('Database connection closed.')
                 DONATE1.clear()
+                DONATE_SERVER.clear()
     else:
         await ctx.send('Эта команда только для разработчиков!')
 
@@ -1059,7 +1141,7 @@ async def wn(ctx, *c):
     ohyh = find_text.split('e="')[1].split('">')[0].split(' ')[-1]
     find_text = str(soup.findAll('div', {'class': 'information__content__additional__item'}))
     dav = find_text.split('e="')[2 + r].split('">')[0].split(': ')[1]
-    if dav == temp:
+    if '+' in dav or '-' in dav:
         r = 1
     dav = find_text.split('e="')[2 + r].split('">')[0].split(': ')[1]
     vlag = find_text.split('e="')[3 + r].split('">')[0].split(': ')[1]
@@ -1115,7 +1197,7 @@ async def wn(ctx, *c):
         soup = BeautifulSoup(html, 'html.parser')
         find_text = str(soup.find('h1', {'class': 'information__header__left__place__city'}))
         city = find_text.split('>')[1].split('<')[0]
-        embed = discord.Embed(title=city, description=date,
+        embed = discord.Embed(title=f'⛅ {city}', description=date,
                               color=0x0084ff)
         embed.add_field(name='🌡️ Температура:', value=temp, inline=True)
         embed.add_field(name='🪁 Но ощущается как:', value=ohyh, inline=True)
@@ -1159,40 +1241,23 @@ async def news(ctx, *c):
     for i in news:
         b.append(f'{i} ([подробнее]({news[i]}))\n\n')
     b = ''.join(b)
-    embed = discord.Embed(title='Последние новости!', description=b,
+    embed = discord.Embed(title='🔍 Последние новости!', description=b,
                           color=0xf5cc00)
-    await buttons.send(
-        embed=embed,
-        channel=ctx.channel.id,
-        components=[
-            ActionRow([
-                Button(
-                    label="▶ Больше новостей ◀",
-                    style=ButtonType().Primary,
-                    custom_id="more_button"
-                )
-            ])
-        ]
-    )
+    await ctx.send(embed=embed,
+                   components=[[Button(label="➕ Больше новостей", custom_id="news", style=ButtonStyle.green)]])
 
     b = []
     for i in pnews:
         b.append(f'{i} ([подробнее]({pnews[i]}))\n\n')
     b = ''.join(b)
-    embed = discord.Embed(title='Последние новости!', description=b,
+    embed = discord.Embed(title='🔍 Последние новости!', description=b,
                           color=0xf5cc00)
     news2 = embed
 
+    interaction = await bot.wait_for("button_click")
 
-@buttons.click
-async def more_button(ctx):
-    global news2
-    await buttons.send(
-        embed=news2,
-        channel=ctx.channel.id,
-        components=[
-        ]
-    )
+    if interaction.component.custom_id == 'news':
+        await interaction.send(embed=news2, ephemeral=False)
 
 
 @bot.command()
@@ -1727,8 +1792,8 @@ async def pro(ctx):
     embed.add_field(name='\u200b', value='\u200b',
                     inline=False)
 
-    embed.add_field(name='🧮 Тарифы:', value='🔸**1.** На одного человека **НА МЕСЯЦ** - 30р \n \
-                                                        🔸**2**. На сервер с __любым количеством участников__ **НА МЕСЯЦ** - 150р',
+    embed.add_field(name='🧮 Тарифы:', value='🔸**1.** На одного человека **НА МЕСЯЦ** - 40р  \n \
+                                            🔸**2**. На сервер с __любым количеством участников__ **НА МЕСЯЦ** - 180р',
                     inline=False)
 
     await author.send(
@@ -1750,10 +1815,10 @@ async def pro(ctx):
     )
     if interaction.values[0] == 'one':
         embed = discord.Embed(title='👑 Salmon-pro', color=0xd1ff52)
-        embed.add_field(name='💰Подписка для одного человека - 30р', value='\u200b',
+        embed.add_field(name='💰Подписка для одного человека - 40р', value='\u200b',
                         inline=False)
 
-        embed.add_field(name='🧾Итого: 30р', value='Выберете способ оплаты и следуйте дальнейшим инструкциям',
+        embed.add_field(name='🧾Итого: 40р', value='Выберете способ оплаты и следуйте дальнейшим инструкциям',
                         inline=False)
 
         await interaction.send(ephemeral=False, embed=embed)
@@ -1771,7 +1836,7 @@ async def pro(ctx):
 
             embed.add_field(name='❗Обязательно', value=f'Поставьте галочку в строке\
             `Добавить назначение платежа` и введите туда это - **`{author.discriminator}`**, а \
-                             в строку `Сколько` - 30!',
+                             в строку `Сколько` - 40!',
                             inline=False)
             embed.set_footer(text='Если вы хотите поменять способ оплаты, напишите !pro заново')
 
@@ -1789,7 +1854,7 @@ async def pro(ctx):
                 url='http://qrcoder.ru/code/?https%3A%2F%2Fwww.tinkoff.ru%2Frm%2Fsavateev.dmitriy12%2FJgqwn3240&4&0')
 
             embed2.add_field(name='❗Обязательно', value=f'Напишите в строке `Сообщение` это - **`{author.discriminator}`**, \
-                             в строке `Сумма` - 30!',
+                             в строке `Сумма` - 40!',
                              inline=False)
             embed2.set_footer(text='Если вы хотите поменять способ оплаты, напишите !pro заново')
 
@@ -1801,10 +1866,10 @@ async def pro(ctx):
 
     else:
         embed = discord.Embed(title='👑 Salmon-pro', color=0xd1ff52)
-        embed.add_field(name='💰Подписка на сервер - 150р', value='\u200b',
+        embed.add_field(name='💰Подписка на сервер - 180р', value='\u200b',
                         inline=False)
 
-        embed.add_field(name='🧾Итого: 150р', value='Выберете способ оплаты и следуйте дальнейшим инструкциям',
+        embed.add_field(name='🧾Итого: 180р', value='Выберете способ оплаты и следуйте дальнейшим инструкциям',
                         inline=False)
 
         await interaction.send(ephemeral=False, embed=embed)
@@ -1822,7 +1887,7 @@ async def pro(ctx):
 
             embed.add_field(name='❗Обязательно', value=f'Поставьте галочку в строке\
                         `Добавить назначение платежа` и введите туда это - **`{ctx.guild.id}`**, а\
-                                         в строку `Сколько` - 150!',
+                                         в строку `Сколько` - 180!',
                             inline=False)
             embed.set_footer(text='Если вы хотите поменять способ оплаты, напишите !pro заново')
 
@@ -1841,7 +1906,7 @@ async def pro(ctx):
 
                 embed2.add_field(name='❗Обязательно',
                                  value=f'Напишите в строке `Сообщение` это - **`{ctx.guild.id}`**, \
-                                 в строке `Сумма` - 150!',
+                                 в строке `Сумма` - 180!',
                                  inline=False)
                 embed2.set_footer(text='Если вы хотите поменять способ оплаты, напишите !pro заново')
 
@@ -1867,7 +1932,8 @@ async def ln(ctx):
         'Мы играем в игру "угадай языки"',
         'Ты посоветуешь меня своим друзьям?)',
         'Может посмотрим фильм?',
-        'Не смей даже думать о том, чтобы меня пожарить!'
+        'Не смей даже думать о том, чтобы меня пожарить!',
+        'Ты уже слушал мою музыку?'
     ]
     lng = [
         'Китайский',
@@ -1946,10 +2012,10 @@ async def ln(ctx):
             lngs.append(a)
     lngs.insert(random.randrange(9), b)
     lngs.append('Я не знаю(')
-    embed = discord.Embed(title='Угадай язык', description='Выбери правильный вариант ответа',
-                          color=0xff2929)
-    embed.add_field(name='Оригинальная фраза;', value=phrase, inline=False)
-    embed.add_field(name='Переведенная фраза:', value=rphrase, inline=False)
+    embed = discord.Embed(title='🌍 Угадай язык', description='Выбери правильный вариант ответа',
+                          color=0xff8534)
+    embed.add_field(name='📖 Оригинальная фраза:', value=phrase, inline=False)
+    embed.add_field(name='🪧 Переведенная фраза:', value=rphrase, inline=False)
     options = [SelectOption(label=lngs[i], value=lngs[i]) for i in range(9)]
     options.append(SelectOption(label=lngs[9], value=lngs[9]))
     await ctx.send(
@@ -1967,12 +2033,11 @@ async def ln(ctx):
     x = intr.values[0]
     if x == b:
 
-        await intr.send('Вы молодец! Это правильный ответ!', ephemeral=False)
+        await intr.send('🙂 Вы молодец! Это правильный ответ!', ephemeral=False)
     elif x == 'Я не знаю(':
-        await intr.send(f'Плохо! Это {b} язык', ephemeral=False)
+        await intr.send(f'🤷‍♂️ Это был {b} язык, попробуйте ещё раз!', ephemeral=False)
     else:
-        await intr.send(f'Неверно! Это {b} язык', ephemeral=False)
-
+        await intr.send(f'😢 Неверно! Это {b} язык', ephemeral=False)
 
 
 # Развлекательный бот с мини-играми, высококачественной музыкой от Яндекс Музыки и голосовым управлением
