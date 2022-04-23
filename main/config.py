@@ -1,5 +1,5 @@
 settings = {
-    'token': 'OTUzMDE4NDY0NjUyNjUyNjc1.Yi-dnA.8juN2t_gRynFmODrqSSp-Sr2a7M',
+    'token': 'OTUzMDE4NDY0NjUyNjUyNjc1.Yi-dnA.zcYesdBBW0dHmmDmNdZQtxSVf9U',
     'bot': 'Salmon',
     'id': 953018464652652675,
     'prefix': '!',
