@@ -883,6 +883,7 @@ async def leave(ctx):
 
 @bot.command()
 async def film(ctx, *kino):
+    await ctx.send('Пожалуйста, подождите...')
     pp = 'Возникла непредвиденная ошибка!\nОна уже отправлена разработчикам!'
     kino = ' '.join([i for i in kino])
     try:
@@ -1003,7 +1004,8 @@ async def film(ctx, *kino):
         # return
     try:
         opisanie = GoogleTranslator(source='auto', target='ru').translate(s)
-        opisanie = GoogleTranslator(source='auto', target='ru').translate(s)
+        opisanie = GoogleTranslator(source='auto', target='ru').translate(s).split('</div')[0]
+
         embed = discord.Embed(title=f'🍿{film_name}',
                               color=0x1ba300)
         if len(picture1) > 12:
@@ -1669,16 +1671,19 @@ async def nim(ctx):
                                   color=0xd1ff52)
             embed.add_field(name='\u200b', value=f'**Из какой кучи ты возьмешь камни?**', inline=False)
             options = [
-                SelectOption(label='1', value='1'),
-                SelectOption(label='2', value='2'),
-                SelectOption(label='3', value='3')
+
             ]
+            ff = []
             if a == 0:
-                del options[0]
+                ff.append(1)
             if b == 0:
-                del options[1]
+                ff.append(2)
             if c == 0:
-                del options[2]
+                ff.append(3)
+            for i in range(1, 4):
+                if i not in ff:
+                    options.append(SelectOption(label=str(i), value=str(i)))
+
             await ctx.send(
                 embed=embed,
                 components=[
