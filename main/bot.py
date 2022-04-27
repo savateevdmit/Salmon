@@ -4,17 +4,17 @@ import random
 import time
 import traceback
 from random import choice
-from pypresence import Presence
 
 try:
     import os
 
-    # os.system('pip install deep-translator')
-    # os.system('pip install pip install discord-buttons-plugin')
-    # os.system("pip install pypresence")
-    # os.system("pip install discord-components")
-    # os.system("pip install dislash.py")
-    # os.system("pip install yandex-music")
+    os.system('pip install deep-translator')
+    os.system('pip install pip install discord-buttons-plugin')
+    os.system("pip install pypresence")
+    os.system("pip install discord-components")
+    os.system("pip install dislash.py")
+    os.system("pip install yandex-music")
+    os.system("pip install traceback2")
 
 except:
     print('ошибка при установке')
@@ -44,10 +44,10 @@ morph = pymorphy2.MorphAnalyzer()
 song = 'song.mp3'
 
 a = False
-# path = 'main/Songs'
+path = 'main/Songs'
 
-program_path = os.getcwd()  # путь до файла, где запускается программа
-path = os.path.join(program_path, 'Songs')
+# program_path = os.getcwd()  # путь до файла, где запускается программа
+# path = os.path.join(program_path, 'Songs')
 DW_SONG = []
 DONATE = []
 DONATE1 = []
@@ -193,8 +193,9 @@ async def play(ctx, *arg):
             else:
                 queues[guild_id] = [source]
 
-            embed = discord.Embed(title=f'{search_result.best.result.title} - {search_result.best.result.artists[0].name}',
-                                  color=0x8c00ff)
+            embed = discord.Embed(
+                title=f'{search_result.best.result.title} - {search_result.best.result.artists[0].name}',
+                color=0x8c00ff)
             embed.set_author(name=f'{search_result.best.result.artists[0].name}',
                              icon_url=f'https://{search_result.best.result.artists[0]["cover"].uri.replace("%%", "600x600")}')
             embed.add_field(name='Альбом:', value=f'{search_result.best.result.albums[0].title}', inline=False)
@@ -272,8 +273,9 @@ async def play(ctx, *arg):
                 return
             # player = voice.play(source, after=lambda x=None: check_queue(ctx, ctx.message.guild.id)) # or "path/to/your.mp3"
 
-            embed = discord.Embed(title=f'{search_result.best.result.title} - {search_result.best.result.artists[0].name}',
-                                  color=0x8c00ff)
+            embed = discord.Embed(
+                title=f'{search_result.best.result.title} - {search_result.best.result.artists[0].name}',
+                color=0x8c00ff)
             embed.set_author(name=f'{search_result.best.result.artists[0].name}',
                              icon_url=f'https://{search_result.best.result.artists[0]["cover"].uri.replace("%%", "600x600")}')
             embed.add_field(name='Альбом:', value=f'{search_result.best.result.albums[0].title}', inline=False)
@@ -313,7 +315,7 @@ async def play(ctx, *arg):
                 ]
             )
     except:
-        await ctx.reply('Возникла непредвиденная ошибка!\n Она уже отправлена разработчикам!')
+        await ctx.reply('Возникла непредвиденная ошибка!\nОна уже отправлена разработчикам!')
         for i in AUTHORS:
             await i.send(f'❌ Ошибка на сервере - {ctx.guild}: ❌')
             await i.send(traceback.format_exc())
@@ -357,7 +359,7 @@ async def chart(ctx):
         await ctx.send(embed=embed)
         # print('kj')
     except Exception as e:
-        await ctx.reply('Возникла непредвиденная ошибка!\n Она уже отправлена разработчикам!')
+        await ctx.reply('Возникла непредвиденная ошибка!\nОна уже отправлена разработчикам!')
         for i in AUTHORS:
             await i.send(f'❌ Ошибка на сервере - {ctx.guild}: ❌')
             await i.send(traceback.format_exc())
@@ -378,7 +380,8 @@ async def play_chart(ctx):
 
             track_text = f'{track.title}{artists}'
 
-            print(f'{track_text} {track.cover_uri} {track.track_id} {track.artists[0].name} {track.artists[0].cover.uri}')
+            print(
+                f'{track_text} {track.cover_uri} {track.track_id} {track.artists[0].name} {track.artists[0].cover.uri}')
 
             if ctx.author.voice:
                 channel = ctx.message.author.voice.channel
@@ -454,8 +457,9 @@ async def play_chart(ctx):
             # voice.play(source, after=lambda x=0: check_queue(ctx, ctx.message.guild.id))
             search_result = client.search(track_text)
 
-            embed = discord.Embed(title=f'{search_result.best.result.title} - {search_result.best.result.artists[0].name}',
-                                  color=0x8c00ff)
+            embed = discord.Embed(
+                title=f'{search_result.best.result.title} - {search_result.best.result.artists[0].name}',
+                color=0x8c00ff)
             embed.set_author(name=f'{search_result.best.result.artists[0].name}',
                              icon_url=f'https://{search_result.best.result.artists[0]["cover"].uri.replace("%%", "600x600")}')
             embed.add_field(name='Альбом:', value=f'{search_result.best.result.albums[0].title}', inline=False)
@@ -495,7 +499,7 @@ async def play_chart(ctx):
                 ]
             )
     except Exception as e:
-        await ctx.reply('Возникла непредвиденная ошибка!\n Она уже отправлена разработчикам!')
+        await ctx.reply('Возникла непредвиденная ошибка!\nОна уже отправлена разработчикам!')
         for i in AUTHORS:
             await i.send(f'❌ Ошибка на сервере - {ctx.guild}: ❌')
             await i.send(traceback.format_exc())
@@ -552,7 +556,8 @@ async def dw(ctx, *arg):
 
                     try:
                         dw_song = f'{search_result.best.result.title}-{search_result.best.result.artists[0].name}.mp3'
-                        DW_SONG.append(f'{search_result.best.result.title}-{search_result.best.result.artists[0].name}.mp3')
+                        DW_SONG.append(
+                            f'{search_result.best.result.title}-{search_result.best.result.artists[0].name}.mp3')
                         await ctx.reply(f'Скачиваю...')
 
                     except AttributeError:
@@ -574,7 +579,8 @@ async def dw(ctx, *arg):
                     embed.set_author(name=f'{search_result.best.result.artists[0].name}',
                                      icon_url=f'https://{search_result.best.result.artists[0]["cover"].uri.replace("%%", "600x600")}')
                     embed.add_field(name='Альбом:', value=f'{search_result.best.result.albums[0].title}', inline=False)
-                    embed.add_field(name='Год выпуска:', value=f'{search_result.best.result.albums[0].year}', inline=False)
+                    embed.add_field(name='Год выпуска:', value=f'{search_result.best.result.albums[0].year}',
+                                    inline=False)
 
                     if search_result.best.result.cover_uri == None:
                         embed.set_image(url=f'https://music.yandex.ru/blocks/meta/i/og-image.png')
@@ -670,7 +676,7 @@ async def queue(ctx):
         await ctx.send(embed=embed)
 
     except Exception as e:
-        await ctx.reply('Возникла непредвиденная ошибка!\n Она уже отправлена разработчикам!')
+        await ctx.reply('Возникла непредвиденная ошибка!\nОна уже отправлена разработчикам!')
         for i in AUTHORS:
             await i.send(f'❌ Ошибка на сервере - {ctx.guild}: ❌')
             await i.send(traceback.format_exc())
@@ -721,7 +727,7 @@ async def meme(ctx):
                 await ctx.send(embed=embed)
 
     except Exception as e:
-        await ctx.reply('Возникла непредвиденная ошибка!\n Она уже отправлена разработчикам!')
+        await ctx.reply('Возникла непредвиденная ошибка!\nОна уже отправлена разработчикам!')
         for i in AUTHORS:
             await i.send(f'❌ Ошибка на сервере - {ctx.guild}: ❌')
             await i.send(traceback.format_exc())
@@ -743,12 +749,11 @@ async def info(ctx, member: discord.Member = None):
         await ctx.channel.send('\u200b')
 
     except Exception as e:
-        await ctx.reply('Возникла непредвиденная ошибка!\n Она уже отправлена разработчикам!')
+        await ctx.reply('Возникла непредвиденная ошибка!\nОна уже отправлена разработчикам!')
         for i in AUTHORS:
             await i.send(f'❌ Ошибка на сервере - {ctx.guild}: ❌')
             await i.send(traceback.format_exc())
         return
-
 
 
 @bot.command()
@@ -802,12 +807,11 @@ async def bc(ctx):
                                 # await ctx.send('stoped')
                                 return
     except Exception as e:
-        await ctx.reply('Возникла непредвиденная ошибка!\n Она уже отправлена разработчикам!')
+        await ctx.reply('Возникла непредвиденная ошибка!\nОна уже отправлена разработчикам!')
         for i in AUTHORS:
             await i.send(f'❌ Ошибка на сервере - {ctx.guild}: ❌')
             await i.send(traceback.format_exc())
         return
-
 
 
 @bot.command()
@@ -823,8 +827,8 @@ async def help(ctx):
         embed.add_field(name='\u200b', value='\u200b', inline=False)
         embed.add_field(name='👑`!dw (название песни)`', value='Скачает абсолютно любую музыку', inline=True)
         embed.add_field(name='`!play_chart`', value='Проиграет песни из чарта   Яндекс Музыки ', inline=True)
-        embed.add_field(name='\u200b', value='\u200b', inline=False)
-        embed.add_field(name='`!queue`', value='Выведет очередь музыки', inline=True)
+        # embed.add_field(name='\u200b', value='\u200b', inline=False)
+        embed.add_field(name='`!queue`', value='Выведет очередь музыки', inline=False)
 
         embed.add_field(name='\u200b', value='**🍿Фильмы**', inline=False)
         embed.add_field(name='`!film (фильм)`', value='Покажет информацию о фильме, а также скинет\
@@ -849,6 +853,7 @@ async def help(ctx):
         embed.add_field(name='\u200b', value='\u200b', inline=False)
         embed.add_field(name='`!news`', value='Покажет последние новости к этому часу, также вам будет доступна кнопка \n \
         `(➕ Больше новостей)`, при нажимании на неё бот пришлёт больше новостей.', inline=True)
+        embed.add_field(name='`!cpp <сообщение>`', value='Отправит разработчикам написанное вами сообщение', inline=True)
         embed.add_field(name='\u200b', value='\u200b', inline=False)
 
         embed.add_field(name='**👑Salmon pro👑**', value='Подписка на бота с помощью которой, вы сможете **скачивать музыку \
@@ -856,15 +861,15 @@ async def help(ctx):
         embed.add_field(name='`!pro`', value='Покажет \
             подробную информацию о подписке', inline=True)
 
-        embed.add_field(name='\u200b',
-                        value='Более подробную информацию ищите здесь - https://clck.ru/eAsPG',
-                        inline=False)
-        # embed.add_field(name="\u200B", value='<https://github.com/savateevdmit/Salmon.git>', inline=False)
+        # embed.add_field(name='\u200b',
+        #                 value='Более подробную информацию ищите здесь - https://clck.ru/eAsPG',
+        #                 inline=False)
+        embed.set_footer(text='Напишите !срр <сообщение> для взаимодействия с разработчиками')
         await ctx.send(embed=embed)
         print(ctx.guild.id)
 
     except Exception as e:
-        await ctx.reply('Возникла непредвиденная ошибка!\n Она уже отправлена разработчикам!')
+        await ctx.reply('Возникла непредвиденная ошибка!\nОна уже отправлена разработчикам!')
         for i in AUTHORS:
             await i.send(f'❌ Ошибка на сервере - {ctx.guild}: ❌')
             await i.send(traceback.format_exc())
@@ -878,6 +883,7 @@ async def leave(ctx):
 
 @bot.command()
 async def film(ctx, *kino):
+    pp = 'Возникла непредвиденная ошибка!\nОна уже отправлена разработчикам!'
     kino = ' '.join([i for i in kino])
     try:
         html = requests.get(
@@ -985,15 +991,16 @@ async def film(ctx, *kino):
         find_text = str(soup.find('span', {'class': 'sc-7ab21ed2-1 jGRxWM'}))
         rating = find_text.split(' ')[-1].split('>')[-2].split('<')[0]
         find_text = str(soup.find('div', {'class': 'ipc-html-content ipc-html-content--base'}))
-        s = find_text.split('<div>')[1].split('<span')[0]
+        s = find_text.split('div">')[1].split('<span')[0]
         while True:
             try:
                 s = s[:s.index('(')] + s[s.index(')') + 1:]
             except:
-                break
-    except:
-        await ctx.reply('Я не понял запрос(\nПопробуйте уточнить!')
-        return
+                if 'http' not in s:
+                    break
+    except Exception as e:
+        pp = 'Я не понял запрос(\nПопробуйте уточнить!'
+        # return
     try:
         opisanie = GoogleTranslator(source='auto', target='ru').translate(s)
         opisanie = GoogleTranslator(source='auto', target='ru').translate(s)
@@ -1021,7 +1028,7 @@ async def film(ctx, *kino):
         await ctx.send(embed=embed)
 
     except Exception as e:
-        await ctx.reply('Возникла непредвиденная ошибка!\n Она уже отправлена разработчикам!')
+        await ctx.reply(pp)
         for i in AUTHORS:
             await i.send(f'❌ Ошибка на сервере - {ctx.guild}: ❌')
             await i.send(traceback.format_exc())
@@ -1128,7 +1135,7 @@ async def logo(ctx):
             await ctx.send(f'{ctx.message.author.mention}, пожалуйста завершите начатую игру!')
 
     except Exception as e:
-        await ctx.reply('Возникла непредвиденная ошибка!\n Она уже отправлена разработчикам!')
+        await ctx.reply('Возникла непредвиденная ошибка!\nОна уже отправлена разработчикам!')
         for i in AUTHORS:
             await i.send(f'❌ Ошибка на сервере - {ctx.guild}: ❌')
             await i.send(traceback.format_exc())
@@ -1239,7 +1246,7 @@ async def add(ctx, arg, server=False):
             await ctx.send('Эта команда только для разработчиков!')
 
     except Exception as e:
-        await ctx.reply('Возникла непредвиденная ошибка!\n Она уже отправлена разработчикам!')
+        await ctx.reply('Возникла непредвиденная ошибка!\nОна уже отправлена разработчикам!')
         for i in AUTHORS:
             await i.send(f'❌ Ошибка на сервере - {ctx.guild}: ❌')
             await i.send(traceback.format_exc())
@@ -1342,7 +1349,7 @@ async def wn(ctx, *c):
             await interaction.send(embed=embed, ephemeral=False)
 
     except Exception as e:
-        await ctx.reply('Возникла непредвиденная ошибка!\n Она уже отправлена разработчикам!')
+        await ctx.reply('Возникла непредвиденная ошибка!\nОна уже отправлена разработчикам!')
         for i in AUTHORS:
             await i.send(f'❌ Ошибка на сервере - {ctx.guild}: ❌')
             await i.send(traceback.format_exc())
@@ -1396,7 +1403,7 @@ async def news(ctx, *c):
             await interaction.send(embed=news2, ephemeral=False)
 
     except Exception as e:
-        await ctx.reply('Возникла непредвиденная ошибка!\n Она уже отправлена разработчикам!')
+        await ctx.reply('Возникла непредвиденная ошибка!\nОна уже отправлена разработчикам!')
         for i in AUTHORS:
             await i.send(f'❌ Ошибка на сервере - {ctx.guild}: ❌')
             await i.send(traceback.format_exc())
@@ -1405,183 +1412,202 @@ async def news(ctx, *c):
 
 @bot.command()
 async def nim(ctx):
-    try:
-        global xod, a, b, c, start, m, n, x
-        options = [
-            SelectOption(label='1', value='1'),
-            SelectOption(label='2', value='2'),
-            SelectOption(label='3', value='3')
-        ]
-        await ctx.send(
-            f'❗Правила❗\n🔰 Имеется несколько куч камней. Каждый игрок в свой ход может забрать из любой кучи любое (ненулевое) количество камней(кроме игры с 1 кучи, там можно от 1 до 3 камней). Выигрывает тот, кто забрал последний камень из последней кучи.\n'
-            'В игру со скольки кучами вы хотите сыграть?',
+    global xod, a, b, c, start, m, n, x
+    options = [
+        SelectOption(label='1', value='1'),
+        SelectOption(label='2', value='2'),
+        SelectOption(label='3', value='3')
+    ]
+    await ctx.send(
+        f'❗Правила❗\n🔰 Имеется несколько куч камней. Каждый игрок в свой ход может забрать из любой кучи любое (ненулевое) количество камней(кроме игры с 1 кучи, там можно от 1 до 3 камней). Выигрывает тот, кто забрал последний камень из последней кучи.\n'
+        'В игру со скольки кучами вы хотите сыграть?',
+        components=[
+            Select(
+                placeholder="Выберите кол-во куч",
+                options=options,
+                custom_id='a',
+            )
+        ],
+    )
+
+    interaction = await bot.wait_for(
+        "select_option", check=lambda inter: inter.custom_id == "a")
+    values = int(interaction.values[0])
+    zz = []
+    options = [
+        SelectOption(label='1', value='1'),
+        SelectOption(label='2', value='2'),
+        SelectOption(label='3', value='3'),
+        SelectOption(label='4', value='4'),
+        SelectOption(label='5', value='5'),
+        SelectOption(label='6', value='6'),
+        SelectOption(label='7', value='7'),
+        SelectOption(label='8', value='8'),
+        SelectOption(label='9', value='9'),
+        SelectOption(label='10', value='10'),
+        SelectOption(label='11', value='11'),
+        SelectOption(label='12', value='12'),
+        SelectOption(label='13', value='13'),
+        SelectOption(label='14', value='14'),
+        SelectOption(label='15', value='15'),
+        SelectOption(label='16', value='16'),
+        SelectOption(label='17', value='17'),
+        SelectOption(label='18', value='18'),
+        SelectOption(label='19', value='19'),
+        SelectOption(label='20', value='20'),
+        SelectOption(label='21', value='21'),
+        SelectOption(label='22', value='22'),
+        SelectOption(label='23', value='23'),
+        SelectOption(label='24', value='24'),
+        SelectOption(label='25', value='25')
+
+    ]
+    for i in range(1, values + 1):
+        await interaction.send(
+            f'Сколько камней будет в {i} куче?',
             components=[
                 Select(
-                    placeholder="Выберите кол-во куч",
+                    placeholder=f"Выберите кол-во камней в {i} куче",
                     options=options,
-                    custom_id='a',
+                    custom_id='b',
                 )
-            ],
+            ], ephemeral=False,
         )
-
         interaction = await bot.wait_for(
-            "select_option", check=lambda inter: inter.custom_id == "a")
-        values = int(interaction.values[0])
-        zz = []
-        options = [
-            SelectOption(label='1', value='1'),
-            SelectOption(label='2', value='2'),
-            SelectOption(label='3', value='3'),
-            SelectOption(label='4', value='4'),
-            SelectOption(label='5', value='5'),
-            SelectOption(label='6', value='6'),
-            SelectOption(label='7', value='7'),
-            SelectOption(label='8', value='8'),
-            SelectOption(label='9', value='9'),
-            SelectOption(label='10', value='10'),
-            SelectOption(label='11', value='11'),
-            SelectOption(label='12', value='12'),
-            SelectOption(label='13', value='13'),
-            SelectOption(label='14', value='14'),
-            SelectOption(label='15', value='15'),
-            SelectOption(label='16', value='16'),
-            SelectOption(label='17', value='17'),
-            SelectOption(label='18', value='18'),
-            SelectOption(label='19', value='19'),
-            SelectOption(label='20', value='20'),
-            SelectOption(label='21', value='21'),
-            SelectOption(label='22', value='22'),
-            SelectOption(label='23', value='23'),
-            SelectOption(label='24', value='24'),
-            SelectOption(label='25', value='25')
+            "select_option", check=lambda inter: inter.custom_id == "b")
+        zz.append(interaction.values[0])
+        # await interaction.send(f'Вы выбрали {interaction.values[0]} камней', ephemeral=False)
+    word2 = morph.parse('камень')[0]
+    try:
+        c = int(zz[2])
+    except:
+        pass
+    try:
+        b = int(zz[1])
+    except:
+        pass
+    try:
+        a = int(zz[0])
+    except:
+        pass
 
-        ]
-        for i in range(1, values + 1):
-            await interaction.send(
-                f'Сколько камней будет в {i} куче?',
-                components=[
-                    Select(
-                        placeholder=f"Выберите кол-во камней в {i} куче",
-                        options=options,
-                        custom_id='b',
-                    )
-                ], ephemeral=False,
-            )
-            interaction = await bot.wait_for(
-                "select_option", check=lambda inter: inter.custom_id == "b")
-            zz.append(interaction.values[0])
-            interaction.send(f'Вы выбрали {interaction.values[0]} камней', ephemeral=False)
-        word2 = morph.parse('камень')[0]
-        try:
-            c = int(zz[2])
-        except:
-            pass
-        try:
-            b = int(zz[1])
-        except:
-            pass
-        try:
-            a = int(zz[0])
-        except:
-            pass
-        if start:
-            embed = discord.Embed(title='❗Условия❗',
-                                  color=0xd1ff52)
+    if a != 0 and b != 0 and c != 0:
+        embed = discord.Embed(title='❗Условия❗',
+                              color=0xd1ff52)
 
-            embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
-            if b != 0:
-                embed.add_field(name='2 куча:', value=f'{b} {word2.make_agree_with_number(b).word}', inline=True)
-            if c != 0:
-                embed.add_field(name='3 куча:', value=f'{c} {word2.make_agree_with_number(c).word}', inline=True)
-            await interaction.send(embed=embed, ephemeral=False)
-            start = False
-        if a != 0 and b != 0 and c != 0:
-            while a != 0 or b != 0 or c != 0:
-                x = 0  # количество камней, забираемых из кучи
-                n = 0
-                if a == b == 0:
-                    n = 3
-                    x = c
-                elif a == c == 0:
+        embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
+        if b != 0:
+            embed.add_field(name='2 куча:', value=f'{b} {word2.make_agree_with_number(b).word}', inline=True)
+        if c != 0:
+            embed.add_field(name='3 куча:', value=f'{c} {word2.make_agree_with_number(c).word}', inline=True)
+        await interaction.send(embed=embed, ephemeral=False)
+        while a != 0 or b != 0 or c != 0:
+            x = 0  # количество камней, забираемых из кучи
+            n = 0
+            if a == b == 0:
+                n = 3
+                x = c
+            elif a == c == 0:
+                n = 2
+                x = b
+            elif b == c == 0:
+                n = 1
+                x = a
+            # проверяю если в какой-то куче 0 камней, то стараюсь выровнять кучи
+            # если две другие кучи уже равны, то уменьшаю одну из куч на 1 камень
+            elif a == 0 and b != 0 and c != 0:
+                if b == c:
                     n = 2
-                    x = b
-                elif b == c == 0:
-                    n = 1
-                    x = a
-                # проверяю если в какой-то куче 0 камней, то стараюсь выровнять кучи
-                # если две другие кучи уже равны, то уменьшаю одну из куч на 1 камень
-                elif a == 0 and b != 0 and c != 0:
-                    if b == c:
-                        n = 2
-                        x = 1
-                    elif b > c:
-                        n = 2
-                        x = b - c
-                    else:
-                        n = 3
-                        x = c - b
-                elif b == 0 and a != 0 and c != 0:
-                    if a == c:
-                        n = 1
-                        x = 1
-                    elif a > c:
-                        n = 1
-                        x = a - c
-                    else:
-                        n = 3
-                        x = c - a
-                elif c == 0 and a != 0 and b != 0:
-                    if a == b:
-                        n = 1
-                        x = 1
-                    elif a > b:
-                        n = 1
-                        x = a - b
-                    else:
-                        n = 2
-                        x = b - a
-                # проверяю если в каких-то двух кучах одинаковое количество камней, то
-                # обнуляю третью кучу
-                elif b == c and a != 0:
-                    n = 1
-                    x = a
-                elif a == c and b != 0:
+                    x = 1
+                elif b > c:
                     n = 2
-                    x = b
-                elif a == b and c != 0:
-                    n = 3
-                    x = c
-                # проверяю проигрышность ситуации любой другой комбинации
-                # если комбинация проигрышная вычитаю 1 камень из наибольшей кучи
+                    x = b - c
                 else:
-                    aa = a
-                    bb = b
-                    cc = c
-                    s = 0
-                    x = 0
-                    r = 0
-                    while aa != 0 or bb != 0 or cc != 0:
-                        s = aa % 2 + bb % 2 + cc % 2
-                        if s % 2 != 0:
-                            x += 2 ** r
-                            razr = r
-                        aa = aa // 2
-                        bb = bb // 2
-                        cc = cc // 2
-                        r += 1
-                    if x == 0:
-                        x = 1
-                        if a > b and a > c:
-                            n = 1
-                        elif b > a and b > c:
-                            n = 2
-                        else:
-                            n = 3
+                    n = 3
+                    x = c - b
+            elif b == 0 and a != 0 and c != 0:
+                if a == c:
+                    n = 1
+                    x = 1
+                elif a > c:
+                    n = 1
+                    x = a - c
+                else:
+                    n = 3
+                    x = c - a
+            elif c == 0 and a != 0 and b != 0:
+                if a == b:
+                    n = 1
+                    x = 1
+                elif a > b:
+                    n = 1
+                    x = a - b
+                else:
+                    n = 2
+                    x = b - a
+            # проверяю если в каких-то двух кучах одинаковое количество камней, то
+            # обнуляю третью кучу
+            elif b == c and a != 0:
+                n = 1
+                x = a
+            elif a == c and b != 0:
+                n = 2
+                x = b
+            elif a == b and c != 0:
+                n = 3
+                x = c
+            # проверяю проигрышность ситуации любой другой комбинации
+            # если комбинация проигрышная вычитаю 1 камень из наибольшей кучи
+            else:
+                aa = a
+                bb = b
+                cc = c
+                s = 0
+                x = 0
+                r = 0
+                while aa != 0 or bb != 0 or cc != 0:
+                    s = aa % 2 + bb % 2 + cc % 2
+                    if s % 2 != 0:
+                        x += 2 ** r
+                        razr = r
+                    aa = aa // 2
+                    bb = bb // 2
+                    cc = cc // 2
+                    r += 1
+                if x == 0:
+                    x = 1
+                    if a > b and a > c:
+                        n = 1
+                    elif b > a and b > c:
+                        n = 2
                     else:
-                        aaa = a
-                        while aaa > 0:
-                            aa = aaa
-                            bb = b
+                        n = 3
+                else:
+                    aaa = a
+                    while aaa > 0:
+                        aa = aaa
+                        bb = b
+                        cc = c
+                        nim = 0
+                        r = 0
+                        while aa != 0 or bb != 0 or cc != 0:
+                            s = aa % 2 + bb % 2 + cc % 2
+                            if s % 2 != 0:
+                                nim += 2 ** r
+                            aa = aa // 2
+                            bb = bb // 2
+                            cc = cc // 2
+                            r += 1
+                        if nim == 0:
+                            n = 1
+                            x = a - aaa
+                            aaa = 0
+                        aaa -= 1
+                    if n == 0:
+                        bbb = b
+                        while bbb > 0:
+                            aa = a
+                            bb = bbb
                             cc = c
                             nim = 0
                             r = 0
@@ -1594,106 +1620,197 @@ async def nim(ctx):
                                 cc = cc // 2
                                 r += 1
                             if nim == 0:
-                                n = 1
-                                x = a - aaa
-                                aaa = 0
-                            aaa -= 1
-                        if n == 0:
-                            bbb = b
-                            while bbb > 0:
-                                aa = a
-                                bb = bbb
-                                cc = c
-                                nim = 0
-                                r = 0
-                                while aa != 0 or bb != 0 or cc != 0:
-                                    s = aa % 2 + bb % 2 + cc % 2
-                                    if s % 2 != 0:
-                                        nim += 2 ** r
-                                    aa = aa // 2
-                                    bb = bb // 2
-                                    cc = cc // 2
-                                    r += 1
-                                if nim == 0:
-                                    n = 2
-                                    x = b - bbb
-                                    bbb = 0
-                                bbb -= 1
-                        if n == 0:
-                            ccc = c
-                            while ccc > 0:
-                                aa = a
-                                bb = b
-                                cc = ccc
-                                nim = 0
-                                r = 0
-                                while aa != 0 or bb != 0 or cc != 0:
-                                    s = aa % 2 + bb % 2 + cc % 2
-                                    if s % 2 != 0:
-                                        nim += 2 ** r
-                                    aa = aa // 2
-                                    bb = bb // 2
-                                    cc = cc // 2
-                                    r += 1
-                                if nim == 0:
-                                    n = 3
-                                    x = c - ccc
-                                    ccc = 0
-                                ccc -= 1
-                if n == 1:
-                    a -= x
-                elif n == 2:
-                    b -= x
-                else:
-                    c -= x
+                                n = 2
+                                x = b - bbb
+                                bbb = 0
+                            bbb -= 1
+                    if n == 0:
+                        ccc = c
+                        while ccc > 0:
+                            aa = a
+                            bb = b
+                            cc = ccc
+                            nim = 0
+                            r = 0
+                            while aa != 0 or bb != 0 or cc != 0:
+                                s = aa % 2 + bb % 2 + cc % 2
+                                if s % 2 != 0:
+                                    nim += 2 ** r
+                                aa = aa // 2
+                                bb = bb // 2
+                                cc = cc // 2
+                                r += 1
+                            if nim == 0:
+                                n = 3
+                                x = c - ccc
+                                ccc = 0
+                            ccc -= 1
+            if n == 1:
+                a -= x
+            elif n == 2:
+                b -= x
+            else:
+                c -= x
+            embed = discord.Embed(title='🪨Ним🪨', description='Мой ход:',
+                                  color=0xd1ff52)
+            embed.add_field(name='\u200b', value=f'**🔸Я взял {x} {word2.make_agree_with_number(x).word}**',
+                            inline=True)
+            embed.add_field(name=f'🔸Из {n} кучи', value=f'------------------------', inline=False)
+            # embed.add_field(name='------------------------', value='\u200b', inline=False)
+            embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
+            embed.add_field(name='2 куча:', value=f'{b} {word2.make_agree_with_number(b).word}', inline=True)
+            embed.add_field(name='3 куча:', value=f'{c} {word2.make_agree_with_number(c).word}', inline=True)
+            if a == b == c == 0:
+                embed.add_field(name='🏆Я выиграл!', value=f'А ты нет :)', inline=False)
+                await ctx.send(embed=embed)
+                break
+            await ctx.send(embed=embed)
+            embed = discord.Embed(title='🪨Ним🪨', description='♻️Твой ход',
+                                  color=0xd1ff52)
+            embed.add_field(name='\u200b', value=f'**Из какой кучи ты возьмешь камни?**', inline=False)
+            options = [
+                SelectOption(label='1', value='1'),
+                SelectOption(label='2', value='2'),
+                SelectOption(label='3', value='3')
+            ]
+            if a == 0:
+                del options[0]
+            if b == 0:
+                del options[1]
+            if c == 0:
+                del options[2]
+            await ctx.send(
+                embed=embed,
+                components=[
+                    Select(
+                        placeholder=f"Выбери номер кучи!",
+                        options=options,
+                        custom_id='c',
+                    )
+                ],
+            )
+            interaction = await bot.wait_for(
+                "select_option", check=lambda inter: inter.custom_id == "c")
+            n = int(interaction.values[0])
+            if n == 1:
+                kk = a
+            elif n == 2:
+                kk = b
+            else:
+                kk = c
+            options = []
+            for i in range(1, kk + 1):
+                options.append(SelectOption(label=i, value=i))
+            await interaction.send(
+                'Сколько камней хотите взять?',
+                ephemeral=False,
+                components=[
+                    Select(
+                        placeholder=f"Выбери число камней!",
+                        options=options,
+                        custom_id='d',
+                    )
+                ])
+            interaction2 = await bot.wait_for(
+                "select_option", check=lambda inter: inter.custom_id == "d")
+            x = int(interaction2.values[0])
+            if n == 1:
+                a -= x
+            elif n == 2:
+                b -= x
+            else:
+                c -= x
+            embed = discord.Embed(title='🪨Ним🪨', description='Твой ход:',
+                                  color=0xd1ff52)
+            embed.add_field(name='\u200b', value=f'**🔸Ты взял {x} {word2.make_agree_with_number(x).word}**',
+                            inline=True)
+            embed.add_field(name=f'🔸Из {n} кучи', value=f'------------------------', inline=False)
+            # embed.add_field(name='------------------------', value='\u200b', inline=False)
+            embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
+            embed.add_field(name='2 куча:', value=f'{b} {word2.make_agree_with_number(b).word}', inline=True)
+            embed.add_field(name='3 куча:', value=f'{c} {word2.make_agree_with_number(c).word}', inline=True)
+            if a == b == c == 0:
+                embed.add_field(name='🏆Ты выиграл!', value=f'А я нет :(', inline=False)
+            await interaction2.send(embed=embed, ephemeral=False)
+        a = b = c = 0
+
+    elif a != 0 and b != 0 and c == 0:
+        embed = discord.Embed(title='❗Условия❗',
+                              color=0xd1ff52)
+
+        embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
+        if b != 0:
+            embed.add_field(name='2 куча:', value=f'{b} {word2.make_agree_with_number(b).word}', inline=True)
+        await interaction.send(embed=embed, ephemeral=False)
+
+        while a > 0 or b > 0:
+            if a > b:
+                x = a - b
+                a -= x
                 embed = discord.Embed(title='🪨Ним🪨', description='Мой ход:',
                                       color=0xd1ff52)
                 embed.add_field(name='\u200b', value=f'**🔸Я взял {x} {word2.make_agree_with_number(x).word}**',
                                 inline=True)
-                embed.add_field(name=f'🔸Из {n} кучи', value=f'------------------------', inline=False)
+                embed.add_field(name=f'🔸Из {1} кучи', value=f'------------------------', inline=False)
                 # embed.add_field(name='------------------------', value='\u200b', inline=False)
                 embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
                 embed.add_field(name='2 куча:', value=f'{b} {word2.make_agree_with_number(b).word}', inline=True)
-                embed.add_field(name='3 куча:', value=f'{c} {word2.make_agree_with_number(c).word}', inline=True)
-                if a == b == c == 0:
-                    embed.add_field(name='🏆Я выиграл!', value=f'А ты нет :)', inline=False)
-                    await ctx.send(embed=embed)
-                    break
-                await ctx.send(embed=embed)
-                embed = discord.Embed(title='🪨Ним🪨', description='♻️Твой ход',
+            elif b > a:
+                x = b - a
+                b -= x
+                embed = discord.Embed(title='🪨Ним🪨', description='Мой ход:',
                                       color=0xd1ff52)
-                embed.add_field(name='\u200b', value=f'**Из какой кучи ты возьмешь камни?**', inline=False)
+                embed.add_field(name='\u200b', value=f'**🔸Я взял {x} {word2.make_agree_with_number(x).word}**',
+                                inline=True)
+                embed.add_field(name=f'🔸Из {2} кучи', value=f'------------------------', inline=False)
+                # embed.add_field(name='------------------------', value='\u200b', inline=False)
+                embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
+                embed.add_field(name='2 куча:', value=f'{b} {word2.make_agree_with_number(b).word}', inline=True)
+            else:
+                x = 1
+                b -= x
+                embed = discord.Embed(title='🪨Ним🪨', description='Мой ход:',
+                                      color=0xd1ff52)
+                embed.add_field(name='\u200b', value=f'**🔸Я взял {x} {word2.make_agree_with_number(x).word}**',
+                                inline=True)
+                embed.add_field(name=f'🔸Из {2} кучи', value=f'------------------------', inline=False)
+                # embed.add_field(name='------------------------', value='\u200b', inline=False)
+                embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
+                embed.add_field(name='2 куча:', value=f'{b} {word2.make_agree_with_number(b).word}', inline=True)
+            if a == b == 0:
+                embed.add_field(name='🏆Я выиграл!', value=f'А ты нет :)', inline=False)
+                await ctx.send(embed=embed)
+                break
+
+            else:
+                n = 0
+                x = 0
                 options = [
                     SelectOption(label='1', value='1'),
-                    SelectOption(label='2', value='2'),
-                    SelectOption(label='3', value='3')
+                    SelectOption(label='2', value='2')
                 ]
                 if a == 0:
                     del options[0]
                 if b == 0:
                     del options[1]
-                if c == 0:
-                    del options[2]
                 await ctx.send(
                     embed=embed,
                     components=[
                         Select(
                             placeholder=f"Выбери номер кучи!",
                             options=options,
-                            custom_id='c',
+                            custom_id='e',
                         )
                     ],
                 )
                 interaction = await bot.wait_for(
-                    "select_option", check=lambda inter: inter.custom_id == "c")
+                    "select_option", check=lambda inter: inter.custom_id == "e")
                 n = int(interaction.values[0])
+                options = []
                 if n == 1:
                     kk = a
                 elif n == 2:
                     kk = b
-                else:
-                    kk = c
-                options = []
                 for i in range(1, kk + 1):
                     options.append(SelectOption(label=i, value=i))
                 await interaction.send(
@@ -1702,387 +1819,276 @@ async def nim(ctx):
                         Select(
                             placeholder=f"Выбери число камней!",
                             options=options,
-                            custom_id='d',
+                            custom_id='f',
                         )
                     ], ephemeral=False,
                 )
                 interaction = await bot.wait_for(
-                    "select_option", check=lambda inter: inter.custom_id == "d")
+                    "select_option", check=lambda inter: inter.custom_id == "f")
                 x = int(interaction.values[0])
                 if n == 1:
                     a -= x
-                elif n == 2:
-                    b -= x
-                else:
-                    c -= x
-                embed = discord.Embed(title='🪨Ним🪨', description='Твой ход:',
-                                      color=0xd1ff52)
-                embed.add_field(name='\u200b', value=f'**🔸Ты взял {x} {word2.make_agree_with_number(x).word}**',
-                                inline=True)
-                embed.add_field(name=f'🔸Из {n} кучи', value=f'------------------------', inline=False)
-                # embed.add_field(name='------------------------', value='\u200b', inline=False)
-                embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
-                embed.add_field(name='2 куча:', value=f'{b} {word2.make_agree_with_number(b).word}', inline=True)
-                embed.add_field(name='3 куча:', value=f'{c} {word2.make_agree_with_number(c).word}', inline=True)
-                if a == b == c == 0:
-                    embed.add_field(name='🏆Ты выиграл!', value=f'А я нет :(', inline=False)
-                await interaction.send(embed=embed, ephemeral=False)
-            a = b = c = 0
-
-        if a != 0 and b != 0 and c == 0:
-            while a > 0 or b > 0:
-                if a > b:
-                    x = a - b
-                    a -= x
-                    embed = discord.Embed(title='🪨Ним🪨', description='Мой ход:',
+                    embed = discord.Embed(title='🪨Ним🪨', description='Твой ход:',
                                           color=0xd1ff52)
-                    embed.add_field(name='\u200b', value=f'**🔸Я взял {x} {word2.make_agree_with_number(x).word}**',
+                    embed.add_field(name='\u200b', value=f'**🔸Ты взял {x} {word2.make_agree_with_number(x).word}**',
                                     inline=True)
-                    embed.add_field(name=f'🔸Из {1} кучи', value=f'------------------------', inline=False)
-                    # embed.add_field(name='------------------------', value='\u200b', inline=False)
-                    embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
-                    embed.add_field(name='2 куча:', value=f'{b} {word2.make_agree_with_number(b).word}', inline=True)
-                elif b > a:
-                    x = b - a
-                    b -= x
-                    embed = discord.Embed(title='🪨Ним🪨', description='Мой ход:',
-                                          color=0xd1ff52)
-                    embed.add_field(name='\u200b', value=f'**🔸Я взял {x} {word2.make_agree_with_number(x).word}**',
-                                    inline=True)
-                    embed.add_field(name=f'🔸Из {2} кучи', value=f'------------------------', inline=False)
+                    embed.add_field(name=f'🔸Из {n} кучи', value=f'------------------------', inline=False)
                     # embed.add_field(name='------------------------', value='\u200b', inline=False)
                     embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
                     embed.add_field(name='2 куча:', value=f'{b} {word2.make_agree_with_number(b).word}', inline=True)
                 else:
-                    x = 1
                     b -= x
-                    embed = discord.Embed(title='🪨Ним🪨', description='Мой ход:',
+                    embed = discord.Embed(title='🪨Ним🪨', description='Твой ход:',
                                           color=0xd1ff52)
-                    embed.add_field(name='\u200b', value=f'**🔸Я взял {x} {word2.make_agree_with_number(x).word}**',
+                    embed.add_field(name='\u200b', value=f'**🔸Ты взял {x} {word2.make_agree_with_number(x).word}**',
                                     inline=True)
-                    embed.add_field(name=f'🔸Из {2} кучи', value=f'------------------------', inline=False)
+                    embed.add_field(name=f'🔸Из {n} кучи', value=f'------------------------', inline=False)
                     # embed.add_field(name='------------------------', value='\u200b', inline=False)
                     embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
                     embed.add_field(name='2 куча:', value=f'{b} {word2.make_agree_with_number(b).word}', inline=True)
                 if a == b == 0:
                     embed.add_field(name='🏆Я выиграл!', value=f'А ты нет :)', inline=False)
-                    await ctx.send(embed=embed)
-                    break
-
-                else:
-                    n = 0
-                    x = 0
-                    options = [
-                        SelectOption(label='1', value='1'),
-                        SelectOption(label='2', value='2')
-                    ]
-                    if a == 0:
-                        del options[0]
-                    if b == 0:
-                        del options[1]
-                    await ctx.send(
-                        embed=embed,
-                        components=[
-                            Select(
-                                placeholder=f"Выбери номер кучи!",
-                                options=options,
-                                custom_id='e',
-                            )
-                        ],
-                    )
-                    interaction = await bot.wait_for(
-                        "select_option", check=lambda inter: inter.custom_id == "e")
-                    n = int(interaction.values[0])
-                    options = []
-                    if n == 1:
-                        kk = a
-                    elif n == 2:
-                        kk = b
-                    for i in range(1, kk + 1):
-                        options.append(SelectOption(label=i, value=i))
-                    await interaction.send(
-                        'Сколько камней хотите взять?',
-                        components=[
-                            Select(
-                                placeholder=f"Выбери число камней!",
-                                options=options,
-                                custom_id='f',
-                            )
-                        ], ephemeral=False,
-                    )
-                    interaction = await bot.wait_for(
-                        "select_option", check=lambda inter: inter.custom_id == "f")
-                    x = int(interaction.values[0])
-                    if n == 1:
-                        a -= x
-                        embed = discord.Embed(title='🪨Ним🪨', description='Твой ход:',
-                                              color=0xd1ff52)
-                        embed.add_field(name='\u200b', value=f'**🔸Ты взял {x} {word2.make_agree_with_number(x).word}**',
-                                        inline=True)
-                        embed.add_field(name=f'🔸Из {n} кучи', value=f'------------------------', inline=False)
-                        # embed.add_field(name='------------------------', value='\u200b', inline=False)
-                        embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
-                        embed.add_field(name='2 куча:', value=f'{b} {word2.make_agree_with_number(b).word}', inline=True)
-                    else:
-                        b -= x
-                        embed = discord.Embed(title='🪨Ним🪨', description='Твой ход:',
-                                              color=0xd1ff52)
-                        embed.add_field(name='\u200b', value=f'**🔸Ты взял {x} {word2.make_agree_with_number(x).word}**',
-                                        inline=True)
-                        embed.add_field(name=f'🔸Из {n} кучи', value=f'------------------------', inline=False)
-                        # embed.add_field(name='------------------------', value='\u200b', inline=False)
-                        embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
-                        embed.add_field(name='2 куча:', value=f'{b} {word2.make_agree_with_number(b).word}', inline=True)
-                    if a == b == 0:
-                        embed.add_field(name='🏆Я выиграл!', value=f'А ты нет :)', inline=False)
-                        await interaction.send(embed=embed, ephemeral=False)
-                        break
                     await interaction.send(embed=embed, ephemeral=False)
-            a = b = 0
-        if a != 0 and b == 0 and c == 0:
-            while a != 0:
-                if a % 4 == 1:
-                    x = 1
-                elif a % 4 == 2:
-                    x = 2
-                elif a % 4 == 3:
-                    x = 3
-                else:
-                    x = 2
+                    break
+                await interaction.send(embed=embed, ephemeral=False)
+        a = b = 0
+    elif a != 0 and b == 0 and c == 0:
+        embed = discord.Embed(title='❗Условия❗',
+                              color=0xd1ff52)
+
+        embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
+        await interaction.send(embed=embed, ephemeral=False)
+        while a != 0:
+            if a % 4 == 1:
+                x = 1
+            elif a % 4 == 2:
+                x = 2
+            elif a % 4 == 3:
+                x = 3
+            else:
+                x = 2
+            if a == 1:
+                x = 1
+            elif a == 2:
+                x = 2
+            elif a == 3:
+                x = 3
+            a = a - x
+            if a == 0:
+                embed = discord.Embed(title='🪨Ним🪨', description='Мой ход:',
+                                      color=0xd1ff52)
+                embed.add_field(name='\u200b', value=f'**🔸Я взял {x} {word2.make_agree_with_number(x).word}**',
+                                inline=True)
+                embed.add_field(name=f'🔸Из единственной кучи', value=f'------------------------', inline=False)
+                # embed.add_field(name='------------------------', value='\u200b', inline=False)
+                embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
+                embed.add_field(name='🏆Я выиграл!', value=f'А ты нет :)', inline=False)
+                await ctx.send(embed=embed)
+                break
+            else:
+                embed = discord.Embed(title='🪨Ним🪨', description='Мой ход:',
+                                      color=0xd1ff52)
+                embed.add_field(name='\u200b', value=f'**🔸Я взял {x} {word2.make_agree_with_number(x).word}**',
+                                inline=True)
+                embed.add_field(name=f'🔸Из единственной кучи', value=f'------------------------', inline=False)
+                # embed.add_field(name='------------------------', value='\u200b', inline=False)
+                embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
+                options = [
+                    SelectOption(label='1', value='1'),
+                    SelectOption(label='2', value='2'),
+                    SelectOption(label='3', value='3')
+                ]
+                if a == 2:
+                    options = options[:-1]
                 if a == 1:
-                    x = 1
-                elif a == 2:
-                    x = 2
-                elif a == 3:
-                    x = 3
-                a = a - x
+                    options = options[0]
+                await ctx.send(embed=embed)
+                await ctx.send(
+                    'Сколько камней хотите взять?',
+                    components=[
+                        Select(
+                            placeholder=f"Выбери число камней!",
+                            options=options,
+                            custom_id='h',
+                        )
+                    ],
+                )
+                interaction = await bot.wait_for(
+                    "select_option", check=lambda inter: inter.custom_id == "h")
+                x = int(interaction.values[0])
+                a -= x
                 if a == 0:
-                    embed = discord.Embed(title='🪨Ним🪨', description='Мой ход:',
+                    embed = discord.Embed(title='🪨Ним🪨', description='Твой ход:',
                                           color=0xd1ff52)
-                    embed.add_field(name='\u200b', value=f'**🔸Я взял {x} {word2.make_agree_with_number(x).word}**',
+                    embed.add_field(name='\u200b', value=f'**🔸Ты взял {x} {word2.make_agree_with_number(x).word}**',
                                     inline=True)
                     embed.add_field(name=f'🔸Из единственной кучи', value=f'------------------------', inline=False)
                     # embed.add_field(name='------------------------', value='\u200b', inline=False)
                     embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
-                    embed.add_field(name='🏆Я выиграл!', value=f'А ты нет :)', inline=False)
-                    await ctx.send(embed=embed)
+                    embed.add_field(name='🏆Ты выиграл!', value=f'А я нет :(', inline=False)
+                    await interaction.send(embed=embed, ephemeral=False)
                     break
                 else:
-                    embed = discord.Embed(title='🪨Ним🪨', description='Мой ход:',
+                    embed = discord.Embed(title='🪨Ним🪨', description='Твой ход:',
                                           color=0xd1ff52)
-                    embed.add_field(name='\u200b', value=f'**🔸Я взял {x} {word2.make_agree_with_number(x).word}**',
+                    embed.add_field(name='\u200b', value=f'**🔸Ты взял {x} {word2.make_agree_with_number(x).word}**',
                                     inline=True)
                     embed.add_field(name=f'🔸Из единственной кучи', value=f'------------------------', inline=False)
                     # embed.add_field(name='------------------------', value='\u200b', inline=False)
                     embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
-                    options = [
-                        SelectOption(label='1', value='1'),
-                        SelectOption(label='2', value='2'),
-                        SelectOption(label='3', value='3')
-                    ]
-                    if a == 2:
-                        options = options[:-1]
-                    if a == 1:
-                        options = options[0]
-                    await ctx.send(
-                        'Сколько камней хотите взять?',
-                        components=[
-                            Select(
-                                placeholder=f"Выбери число камней!",
-                                options=options,
-                                custom_id='h',
-                            )
-                        ], ephemeral=False,
-                    )
-                    interaction = await bot.wait_for(
-                        "select_option", check=lambda inter: inter.custom_id == "h")
-                    x = int(interaction.values[0])
-                    a -= x
-                    if a == 0:
-                        embed = discord.Embed(title='🪨Ним🪨', description='Твой ход:',
-                                              color=0xd1ff52)
-                        embed.add_field(name='\u200b', value=f'**🔸Ты взял {x} {word2.make_agree_with_number(x).word}**',
-                                        inline=True)
-                        embed.add_field(name=f'🔸Из единственной кучи', value=f'------------------------', inline=False)
-                        # embed.add_field(name='------------------------', value='\u200b', inline=False)
-                        embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
-                        embed.add_field(name='🏆Ты выиграл!', value=f'А я нет :(', inline=False)
-                        await interaction.send(embed=embed, ephemeral=False)
-                        break
-                    else:
-                        embed = discord.Embed(title='🪨Ним🪨', description='Твой ход:',
-                                              color=0xd1ff52)
-                        embed.add_field(name='\u200b', value=f'**🔸Ты взял {x} {word2.make_agree_with_number(x).word}**',
-                                        inline=True)
-                        embed.add_field(name=f'🔸Из единственной кучи', value=f'------------------------', inline=False)
-                        # embed.add_field(name='------------------------', value='\u200b', inline=False)
-                        embed.add_field(name='1 куча:', value=f'{a} {word2.make_agree_with_number(a).word}', inline=True)
-                        await interaction.send(embed=embed, ephemeral=False)
-            a = 0
-    except Exception as e:
-        await ctx.reply('Возникла непредвиденная ошибка!\n Она уже отправлена разработчикам!')
-        for i in AUTHORS:
-            await i.send(f'❌ Ошибка на сервере - {ctx.guild}: ❌')
-            await i.send(traceback.format_exc())
-        return
+                    await interaction.send(embed=embed, ephemeral=False)
+        a = 0
 
 
 @bot.command()
 async def pro(ctx):
-    try:
-        author = ctx.message.author
-        if author.discriminator in DEVELOPERS and author.discriminator not in AUTHORS:
-            AUTHORS.append(author)
-        print(author)
-        await ctx.send(f'{author.mention}, отправил информацию вам в ЛС')
+    author = ctx.message.author
+    if author.discriminator in DEVELOPERS and author.discriminator not in AUTHORS:
+        AUTHORS.append(author)
+    print(author)
+    await ctx.send(f'{author.mention}, отправил информацию вам в ЛС')
 
+    embed = discord.Embed(title='👑 Salmon-pro', color=0xd1ff52)
+    embed.add_field(name='🔰 Описание подписки:', value='С помощью этой подписки \
+                вы сможете без труда \n __скачивать абсолютно любую музыку__, просто напишите боту `!dw (песня)`, \n \
+                и бот __автоматически начнёт поиск и скачивание__, а потом отправит её вам в личные \
+                сообщения. Вся процедура займёт __не более 15 секунд__, что намного быстрее, чем ручной поиск!',
+                    inline=False)
+
+    embed.add_field(name='\u200b', value='\u200b',
+                    inline=False)
+
+    embed.add_field(name='🧮 Тарифы:', value='🔸**1.** На одного человека **НА МЕСЯЦ** - 40р  \n \
+                                            🔸**2**. На сервер с __любым количеством участников__ **НА МЕСЯЦ** - 180р',
+                    inline=False)
+
+    await author.send(
+        embed=embed,
+        components=[
+            Select(
+                placeholder="Выберите тариф",
+                options=[
+                    SelectOption(label="1. На одного человека", value="one"),
+                    SelectOption(label="2. На весь сервер", value="all"),
+                ],
+                custom_id="tarif",
+            )
+        ],
+    )
+
+    interaction1 = await bot.wait_for(
+        "select_option", check=lambda inter: inter.custom_id == "tarif"
+    )
+    if interaction1.values[0] == 'one':
         embed = discord.Embed(title='👑 Salmon-pro', color=0xd1ff52)
-        embed.add_field(name='🔰 Описание подписки:', value='С помощью этой подписки \
-                    вы сможете без труда \n __скачивать абсолютно любую музыку__, просто напишите боту `!dw (песня)`, \n \
-                    и бот __автоматически начнёт поиск и скачивание__, а потом отправит её вам в личные \
-                    сообщения. Вся процедура займёт __не более 15 секунд__, что намного быстрее, чем ручной поиск!',
+        embed.add_field(name='💰Подписка для одного человека - 40р', value='\u200b',
                         inline=False)
 
-        embed.add_field(name='\u200b', value='\u200b',
+        embed.add_field(name='🧾Итого: 40р', value='Выберете способ оплаты и следуйте дальнейшим инструкциям',
                         inline=False)
 
-        embed.add_field(name='🧮 Тарифы:', value='🔸**1.** На одного человека **НА МЕСЯЦ** - 40р  \n \
-                                                🔸**2**. На сервер с __любым количеством участников__ **НА МЕСЯЦ** - 180р',
-                        inline=False)
+        await interaction1.send(ephemeral=False, embed=embed)
 
-        await author.send(
-            embed=embed,
-            components=[
-                Select(
-                    placeholder="Выберите тариф",
-                    options=[
-                        SelectOption(label="1. На одного человека", value="one"),
-                        SelectOption(label="2. На весь сервер", value="all"),
-                    ],
-                    custom_id="tarif",
-                )
-            ],
-        )
+        msg = await author.send(components=[[Button(label="🪙Юмани", custom_id="yoomoney", style=ButtonStyle.green),
+                                             Button(label="💳Перевод по номеру карты", custom_id="card",
+                                                    style=ButtonStyle.green)]])
 
-        interaction = await bot.wait_for(
-            "select_option", check=lambda inter: inter.custom_id == "tarif"
-        )
-        if interaction.values[0] == 'one':
+        interaction2 = await bot.wait_for("button_click")
+        if interaction2.component.custom_id == 'yoomoney':
             embed = discord.Embed(title='👑 Salmon-pro', color=0xd1ff52)
-            embed.add_field(name='💰Подписка для одного человека - 40р', value='\u200b',
+            embed.set_thumbnail(url='http://qrcoder.ru/code/?https%3A%2F%2Fyoomoney.ru%2Fto%2F4100110960641547&4&0')
+            embed.add_field(name='🪙Юмани', value='\u200b',
                             inline=False)
 
-            embed.add_field(name='🧾Итого: 40р', value='Выберете способ оплаты и следуйте дальнейшим инструкциям',
+            embed.add_field(name='❗Обязательно', value=f'Поставьте галочку в строке\
+            `Добавить назначение платежа` и введите туда это - **`{author.discriminator}`**, а \
+                             в строку `Сколько` - 40!',
+                            inline=False)
+            embed.set_footer(text='Если вы хотите поменять способ оплаты, напишите !pro заново')
+
+            await msg.delete()
+            await interaction2.send(embed=embed, ephemeral=False)
+            await author.send(components=[
+                [Button(label="🪙Юмани", url='https://yoomoney.ru/to/4100110960641547', style=ButtonStyle.URL)]])
+
+
+        else:
+            embed2 = discord.Embed(title='👑 Salmon-pro', color=0xd1ff52)
+            embed2.add_field(name='💳Перевод по номеру карты', value='\u200b',
+                             inline=False)
+            embed2.set_thumbnail(
+                url='http://qrcoder.ru/code/?https%3A%2F%2Fwww.tinkoff.ru%2Frm%2Fsavateev.dmitriy12%2FJgqwn3240&4&0')
+
+            embed2.add_field(name='❗Обязательно',
+                             value=f'Напишите в строке `Сообщение` это - **`{author.discriminator}`**, \
+                             в строке `Сумма` - 40!',
+                             inline=False)
+            embed2.set_footer(text='Если вы хотите поменять способ оплаты, напишите !pro заново')
+
+            await msg.delete()
+            await interaction2.send(embed=embed2, ephemeral=False)
+            await author.send(components=[[Button(label="💳Перевод по номеру карты",
+                                                  url='https://www.tinkoff.ru/rm/savateev.dmitriy12/Jgqwn3240',
+                                                  style=ButtonStyle.URL)]])
+
+    else:
+        embed = discord.Embed(title='👑 Salmon-pro', color=0xd1ff52)
+        embed.add_field(name='💰Подписка на сервер - 180р', value='\u200b',
+                        inline=False)
+
+        embed.add_field(name='🧾Итого: 180р', value='Выберете способ оплаты и следуйте дальнейшим инструкциям',
+                        inline=False)
+
+        await interaction1.send(ephemeral=False, embed=embed)
+
+        msg = await author.send(components=[[Button(label="🪙Юмани", custom_id="yoomoney", style=ButtonStyle.green),
+                                             Button(label="💳Перевод по номеру карты", custom_id="card",
+                                                    style=ButtonStyle.green)]])
+
+        interaction3 = await bot.wait_for("button_click")
+        if interaction3.component.custom_id == 'yoomoney':
+            embed = discord.Embed(title='👑 Salmon-pro', color=0xd1ff52)
+            embed.set_thumbnail(url='http://qrcoder.ru/code/?https%3A%2F%2Fyoomoney.ru%2Fto%2F4100110960641547&4&0')
+            embed.add_field(name='🪙Юмани', value='\u200b',
                             inline=False)
 
-            await interaction.send(ephemeral=False, embed=embed)
+            embed.add_field(name='❗Обязательно', value=f'Поставьте галочку в строке\
+                        `Добавить назначение платежа` и введите туда это - **`{ctx.guild.id}`**, а\
+                                         в строку `Сколько` - 180!',
+                            inline=False)
+            embed.set_footer(text='Если вы хотите поменять способ оплаты, напишите !pro заново')
 
-            msg = await author.send(components=[[Button(label="🪙Юмани", custom_id="yoomoney", style=ButtonStyle.green),
-                                                 Button(label="💳Перевод по номеру карты", custom_id="card",
-                                                        style=ButtonStyle.green)]])
+            await msg.delete()
+            await interaction3.send(embed=embed, ephemeral=False)
+            await author.send(components=[
+                [Button(label="🪙Юмани", url='https://yoomoney.ru/to/4100110960641547', style=ButtonStyle.URL)]])
 
-            interaction = await bot.wait_for("button_click")
-            if interaction.component.custom_id == 'yoomoney':
-                embed = discord.Embed(title='👑 Salmon-pro', color=0xd1ff52)
-                embed.set_thumbnail(url='http://qrcoder.ru/code/?https%3A%2F%2Fyoomoney.ru%2Fto%2F4100110960641547&4&0')
-                embed.add_field(name='🪙Юмани', value='\u200b',
-                                inline=False)
-
-                embed.add_field(name='❗Обязательно', value=f'Поставьте галочку в строке\
-                `Добавить назначение платежа` и введите туда это - **`{author.discriminator}`**, а \
-                                 в строку `Сколько` - 40!',
-                                inline=False)
-                embed.set_footer(text='Если вы хотите поменять способ оплаты, напишите !pro заново')
-
-                await msg.delete()
-                await interaction.send(embed=embed, ephemeral=False)
-                await author.send(components=[
-                    [Button(label="🪙Юмани", url='https://yoomoney.ru/to/4100110960641547', style=ButtonStyle.URL)]])
-
-
-            else:
+        if interaction3.component.custom_id == 'card':
+            try:
                 embed2 = discord.Embed(title='👑 Salmon-pro', color=0xd1ff52)
                 embed2.add_field(name='💳Перевод по номеру карты', value='\u200b',
                                  inline=False)
                 embed2.set_thumbnail(
                     url='http://qrcoder.ru/code/?https%3A%2F%2Fwww.tinkoff.ru%2Frm%2Fsavateev.dmitriy12%2FJgqwn3240&4&0')
 
-                embed2.add_field(name='❗Обязательно', value=f'Напишите в строке `Сообщение` это - **`{author.discriminator}`**, \
-                                 в строке `Сумма` - 40!',
+                embed2.add_field(name='❗Обязательно',
+                                 value=f'Напишите в строке `Сообщение` это - **`{ctx.guild.id}`**, \
+                                 в строке `Сумма` - 180!',
                                  inline=False)
                 embed2.set_footer(text='Если вы хотите поменять способ оплаты, напишите !pro заново')
 
                 await msg.delete()
-                await interaction.send(embed=embed2, ephemeral=False)
+                await interaction3.send(embed=embed2, ephemeral=False)
+
                 await author.send(components=[[Button(label="💳Перевод по номеру карты",
                                                       url='https://www.tinkoff.ru/rm/savateev.dmitriy12/Jgqwn3240',
                                                       style=ButtonStyle.URL)]])
 
-        else:
-            embed = discord.Embed(title='👑 Salmon-pro', color=0xd1ff52)
-            embed.add_field(name='💰Подписка на сервер - 180р', value='\u200b',
-                            inline=False)
-
-            embed.add_field(name='🧾Итого: 180р', value='Выберете способ оплаты и следуйте дальнейшим инструкциям',
-                            inline=False)
-
-            await interaction.send(ephemeral=False, embed=embed)
-
-            msg = await author.send(components=[[Button(label="🪙Юмани", custom_id="yoomoney", style=ButtonStyle.green),
-                                                 Button(label="💳Перевод по номеру карты", custom_id="card",
-                                                        style=ButtonStyle.green)]])
-
-            interaction = await bot.wait_for("button_click")
-            if interaction.component.custom_id == 'yoomoney':
-                embed = discord.Embed(title='👑 Salmon-pro', color=0xd1ff52)
-                embed.set_thumbnail(url='http://qrcoder.ru/code/?https%3A%2F%2Fyoomoney.ru%2Fto%2F4100110960641547&4&0')
-                embed.add_field(name='🪙Юмани', value='\u200b',
-                                inline=False)
-
-                embed.add_field(name='❗Обязательно', value=f'Поставьте галочку в строке\
-                            `Добавить назначение платежа` и введите туда это - **`{ctx.guild.id}`**, а\
-                                             в строку `Сколько` - 180!',
-                                inline=False)
-                embed.set_footer(text='Если вы хотите поменять способ оплаты, напишите !pro заново')
-
-                await msg.delete()
-                await interaction.send(embed=embed, ephemeral=False)
-                await author.send(components=[
-                    [Button(label="🪙Юмани", url='https://yoomoney.ru/to/4100110960641547', style=ButtonStyle.URL)]])
-
-            if interaction.component.custom_id == 'card':
-                try:
-                    embed2 = discord.Embed(title='👑 Salmon-pro', color=0xd1ff52)
-                    embed2.add_field(name='💳Перевод по номеру карты', value='\u200b',
-                                     inline=False)
-                    embed2.set_thumbnail(
-                        url='http://qrcoder.ru/code/?https%3A%2F%2Fwww.tinkoff.ru%2Frm%2Fsavateev.dmitriy12%2FJgqwn3240&4&0')
-
-                    embed2.add_field(name='❗Обязательно',
-                                     value=f'Напишите в строке `Сообщение` это - **`{ctx.guild.id}`**, \
-                                     в строке `Сумма` - 180!',
-                                     inline=False)
-                    embed2.set_footer(text='Если вы хотите поменять способ оплаты, напишите !pro заново')
-
-                    await msg.delete()
-                    await interaction.send(embed=embed2, ephemeral=False)
-
-                    await author.send(components=[[Button(label="💳Перевод по номеру карты",
-                                                          url='https://www.tinkoff.ru/rm/savateev.dmitriy12/Jgqwn3240',
-                                                          style=ButtonStyle.URL)]])
-
-                except:
-                    await author.send(
-                        '❌Пожалуйста, напишите эту команду на сервере, для которого хотите подключить подписку!❌')
+            except:
+                await author.send(
+                    '❌Пожалуйста, напишите эту команду на сервере, для которого хотите подключить подписку!❌')
 
             # await interaction2.send(embed=embed2, ephemeral=False)
-
-    except Exception as e:
-        await ctx.reply('Возникла непредвиденная ошибка!\n Она уже отправлена разработчикам!')
-        for i in AUTHORS:
-            await i.send(f'❌ Ошибка на сервере - {ctx.guild}: ❌')
-            await i.send(traceback.format_exc())
-        return
 
 
 @bot.command()
@@ -2098,60 +2104,13 @@ async def ln(ctx):
             'Ты уже слушал мою музыку?'
         ]
         lng = [
-            'Китайский',
-            'Хинди',
-            'Английский',
-            'Испанский',
-            'Бенгальский',
-            'Португальский',
-            'Японский',
-            'Корейский',
-            'Французский',
-            'Яванский',
-            'Телугу',
-            'Маратхи',
-            'Вьетнамский',
-            'Тамильский',
-            'Итальянский',
-            'Турецкий',
-            'Урду',
-            'Панджаби',
-            'Украинский',
-            'Гуджарати',
-            'Тайский',
-            'Польский',
-            'Малаялам',
-            'Каннада',
-            'Бирманский',
-            'Азербайджанский',
-            'Персидский',
-            'Сунданский',
-            'Пушту',
-            'Румынский',
-            'Бходжпури',
-            'Хауса',
-            'Малайский',
-            'Сербохорватский',
-            'Узбекский',
-            'Йоруба',
-            'Нидерландский',
-            'Синдхи',
-            'Игбо',
-            'Амхарский',
-            'Индонезийский',
-            'Тагальский',
-            'Непальский',
-            'Ассамский',
-            'Венгерский',
-            'Читтагонг',
-            'Чжуанский',
-            'Марвари',
-            'Харьянви',
-            'Греческий',
-            'Чешский',
-            'Дакхни',
-            'Малагасийский',
-            'Белорусский'
+            'Китайский', 'Хинди', 'Английский', 'Испанский', 'Бенгальский', 'Португальский', 'Японский', 'Корейский',
+            'Французский', 'Яванский', 'Телугу', 'Маратхи', 'Вьетнамский', 'Тамильский', 'Итальянский', 'Турецкий',
+            'Урду', 'Панджаби', 'Украинский', 'Гуджарати', 'Тайский', 'Польский', 'Малаялам', 'Каннада', 'Бирманский',
+            'Азербайджанский', 'Персидский', 'Сунданский', 'Пушту', 'Румынский', 'Бходжпури', 'Хауса', 'Малайский',
+            'Сербохорватский', 'Узбекский', 'Йоруба', 'Нидерландский', 'Синдхи', 'Игбо', 'Амхарский', 'Индонезийский',
+            'Тагальский', 'Непальский', 'Ассамский', 'Венгерский', 'Читтагонг', 'Чжуанский', 'Марвари', 'Харьянви',
+            'Греческий', 'Чешский', 'Дакхни', 'Малагасийский', 'Белорусский'
         ]
         b = choice(lng)
         print(b)
@@ -2202,7 +2161,7 @@ async def ln(ctx):
             await intr.send(f'😢 Неверно! Это {b} язык', ephemeral=False)
 
     except Exception as e:
-        await ctx.reply('Возникла непредвиденная ошибка!\n Она уже отправлена разработчикам!')
+        await ctx.reply('Возникла непредвиденная ошибка!\nОна уже отправлена разработчикам!')
         for i in AUTHORS:
             await i.send(f'❌ Ошибка на сервере - {ctx.guild}: ❌')
             await i.send(traceback.format_exc())
@@ -2216,12 +2175,13 @@ async def cpp(ctx, *mmb):
         return
     GALOBI[ctx.message.author] = ' '.join(mmb)
     for i in AUTHORS:
-        await i.send(f"---------------------------------------------------\nОт пользователя: {ctx.message.author}(id={ctx.message.author.id})\nНа сервере: {ctx.message.guild} (id={ctx.message.guild.id})\nВ канале: {ctx.message.channel} (id={ctx.message.channel.id})\nЖалоба: {' '.join(mmb)}")
+        await i.send(
+            f"---------------------------------------------------\nОт пользователя: {ctx.message.author}(id={ctx.message.author.id})\nНа сервере: {ctx.message.guild} (id={ctx.message.guild.id})\nВ канале: {ctx.message.channel} (id={ctx.message.channel.id})\nЖалоба: {' '.join(mmb)}")
     await ctx.reply('Спасибо! Ваше обращение учтено и находится на рассмотрении!')
 
 
 @bot.command()
-async def otv(ctx, *mmb):
+async def ans(ctx, *mmb):
     author = ctx.message.author
     if author.discriminator in DEVELOPERS:
         us = mmb[0]
@@ -2229,11 +2189,11 @@ async def otv(ctx, *mmb):
         k = []
         for i in GALOBI:
             if str(i) == us:
-                await i.send(f"Вам пришел ответ из тех. поддержки!:\nВаше обращение: {GALOBI[i]}\nОт разработчика: {author.name}\nОтвет: {' '.join(mmb)}")
+                await i.send(
+                    f"Вам пришел ответ из тех. поддержки!:\nВаше обращение: {GALOBI[i]}\nОт разработчика: {author.name}\nОтвет: {' '.join(mmb)}")
                 k.append(i)
         for i in k:
             del GALOBI[i]
-
 
 
 # Развлекательный бот с мини-играми, высококачественной музыкой от Яндекс Музыки и голосовым управлением
