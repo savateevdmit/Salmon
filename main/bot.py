@@ -5,19 +5,19 @@ import time
 import traceback
 from random import choice
 
-# try:
-#     import os
-#
-#     os.system('pip install deep-translator')
-#     os.system('pip install pip install discord-buttons-plugin')
-#     os.system("pip install pypresence")
-#     os.system("pip install discord-components")
-#     os.system("pip install dislash.py")
-#     os.system("pip install yandex-music")
-#     os.system("pip install traceback2")
-#
-# except:
-#     print('ошибка при установке')
+try:
+    import os
+
+    os.system('pip install deep-translator')
+    os.system('pip install pip install discord-buttons-plugin')
+    os.system("pip install pypresence")
+    os.system("pip install discord-components")
+    os.system("pip install dislash.py")
+    os.system("pip install yandex-music")
+    os.system("pip install traceback2")
+
+except:
+    print('ошибка при установке')
 
 import aiohttp
 import psycopg2
@@ -63,7 +63,7 @@ bot = ComponentsBot("!")
 buttons = ButtonsClient(bot)
 bot.remove_command('help')
 queues = {}
-music_id = []
+music_id = [1]
 bot_queue = []
 news2 = ''
 
@@ -153,6 +153,10 @@ async def on_ready():
 @bot.command()
 async def play(ctx, *arg):
     try:
+        if not ctx.author.voice:
+            await ctx.send("Зайдите в любой голосовой канал, чтобы использовать эту команду!")
+            return
+
         def convert_tuple(c_tuple):
             str = ' '.join(c_tuple)
             return str
@@ -196,8 +200,13 @@ async def play(ctx, *arg):
             embed = discord.Embed(
                 title=f'{search_result.best.result.title} - {search_result.best.result.artists[0].name}',
                 color=0x8c00ff)
-            embed.set_author(name=f'{search_result.best.result.artists[0].name}',
-                             icon_url=f'https://{search_result.best.result.artists[0]["cover"].uri.replace("%%", "600x600")}')
+
+            if search_result.best.result.artists[0]["cover"] == None:
+                embed.set_author(name=f'{search_result.best.result.artists[0].name}',
+                                 icon_url=f'https://music.yandex.ru/blocks/meta/i/og-image.pn')
+            else:
+                embed.set_author(name=f'{search_result.best.result.artists[0].name}',
+                                 icon_url=f'https://{search_result.best.result.artists[0]["cover"].uri.replace("%%", "600x600")}')
             embed.add_field(name='Альбом:', value=f'{search_result.best.result.albums[0].title}', inline=False)
             embed.add_field(name='Год выпуска:', value=f'{search_result.best.result.albums[0].year}', inline=False)
 
@@ -236,6 +245,9 @@ async def play(ctx, *arg):
         # elif ctx.guild.voice_client in bot.voice_clients and not ctx.voice_client.is_playing():
 
         else:
+            if not ctx.author.voice:
+                await ctx.send("Зайдите в любой голосовой канал, чтобы использовать эту команду!")
+                return
             name = convert_tuple(arg)
             print(name)
             search_result = client.search(name)
@@ -268,16 +280,18 @@ async def play(ctx, *arg):
                 print('начал проигрывать песню')
                 # except:
                 #     print('ошибка в 123 строке')
-            else:
-                await ctx.send("Зайдите в любой голосовой канал, чтобы использовать эту команду!")
-                return
+
             # player = voice.play(source, after=lambda x=None: check_queue(ctx, ctx.message.guild.id)) # or "path/to/your.mp3"
 
             embed = discord.Embed(
                 title=f'{search_result.best.result.title} - {search_result.best.result.artists[0].name}',
                 color=0x8c00ff)
-            embed.set_author(name=f'{search_result.best.result.artists[0].name}',
-                             icon_url=f'https://{search_result.best.result.artists[0]["cover"].uri.replace("%%", "600x600")}')
+            if search_result.best.result.artists[0]["cover"] == None:
+                embed.set_author(name=f'{search_result.best.result.artists[0].name}',
+                                 icon_url=f'https://music.yandex.ru/blocks/meta/i/og-image.pn')
+            else:
+                embed.set_author(name=f'{search_result.best.result.artists[0].name}',
+                                 icon_url=f'https://{search_result.best.result.artists[0]["cover"].uri.replace("%%", "600x600")}')
             embed.add_field(name='Альбом:', value=f'{search_result.best.result.albums[0].title}', inline=False)
             embed.add_field(name='Год выпуска:', value=f'{search_result.best.result.albums[0].year}', inline=False)
             # print(f'{search_result.best.result.cover_uri}, {search_result.best.result}')
@@ -576,8 +590,12 @@ async def dw(ctx, *arg):
                     embed = discord.Embed(
                         title=f'{search_result.best.result.title} - {search_result.best.result.artists[0].name}',
                         color=0x8c00ff)
-                    embed.set_author(name=f'{search_result.best.result.artists[0].name}',
-                                     icon_url=f'https://{search_result.best.result.artists[0]["cover"].uri.replace("%%", "600x600")}')
+                    if search_result.best.result.artists[0]["cover"] == None:
+                        embed.set_author(name=f'{search_result.best.result.artists[0].name}',
+                                         icon_url=f'https://music.yandex.ru/blocks/meta/i/og-image.pn')
+                    else:
+                        embed.set_author(name=f'{search_result.best.result.artists[0].name}',
+                                         icon_url=f'https://{search_result.best.result.artists[0]["cover"].uri.replace("%%", "600x600")}')
                     embed.add_field(name='Альбом:', value=f'{search_result.best.result.albums[0].title}', inline=False)
                     embed.add_field(name='Год выпуска:', value=f'{search_result.best.result.albums[0].year}',
                                     inline=False)
@@ -856,7 +874,7 @@ async def help(ctx):
         embed.add_field(name='`!cpp <сообщение>`', value='Отправит разработчикам написанное вами сообщение', inline=True)
         embed.add_field(name='\u200b', value='\u200b', inline=False)
 
-        embed.add_field(name='**👑Salmon pro👑**', value='Подписка на бота с помощью которой, вы сможете **скачивать музыку \
+        embed.add_field(name='**👑Salmon pro👑**', value='Подписка на бота, с помощью которой, вы сможете **скачивать музыку \
         буквально в два клика**', inline=False)
         embed.add_field(name='`!pro`', value='Покажет \
             подробную информацию о подписке', inline=True)
@@ -1033,7 +1051,6 @@ async def film(ctx, *kino):
             await i.send(f'❌ Ошибка на сервере - {ctx.guild}: ❌')
             await i.send(traceback.format_exc())
         return
-
 
 @bot.command()
 async def logo(ctx):
@@ -1946,7 +1963,7 @@ async def nim(ctx):
 @bot.command()
 async def pro(ctx):
     author = ctx.message.author
-    if author.discriminator in DEVELOPERS and author.discriminator not in AUTHORS:
+    if author.discriminator in DEVELOPERS and author not in AUTHORS:
         AUTHORS.append(author)
     print(author)
     await ctx.send(f'{author.mention}, отправил информацию вам в ЛС')
