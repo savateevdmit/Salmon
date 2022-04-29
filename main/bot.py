@@ -5,19 +5,19 @@ import time
 import traceback
 from random import choice
 
-try:
-    import os
-
-    os.system('pip install deep-translator')
-    os.system('pip install pip install discord-buttons-plugin')
-    os.system("pip install pypresence")
-    os.system("pip install discord-components")
-    os.system("pip install dislash.py")
-    os.system("pip install yandex-music")
-    os.system("pip install traceback2")
-
-except:
-    print('ошибка при установке')
+# try:
+#     import os
+#
+#     os.system('pip install deep-translator')
+#     os.system('pip install pip install discord-buttons-plugin')
+#     os.system("pip install pypresence")
+#     os.system("pip install discord-components")
+#     os.system("pip install dislash.py")
+#     os.system("pip install yandex-music")
+#     os.system("pip install traceback2")
+#
+# except:
+#     print('ошибка при установке')
 
 import aiohttp
 import psycopg2
@@ -944,14 +944,13 @@ async def film(ctx, *kino):
         html = requests.get(f'https://ru.wikipedia.org/{a}').text
         soup = BeautifulSoup(html, 'html.parser')
         find_text = str(soup.find('span', {'data-wikidata-property-id': 'P272'}))
-        e = find_text.split(' ')
+        e = find_text.split('</a>')
         h = []
         if e[0] == "None":
             find_text = str(soup.find('div', {'data-wikidata-property-id': 'P272'}))
-            e = find_text.split(' ')
         for i in e:
-            if 'href' in i:
-                h.append(i.split('/')[2][:-1])
+            if 'title' in i:
+                h.append(i.split('title="')[-1].split('">')[-1])
         find_text = str(soup.find('span', {'data-wikidata-property-id': 'P2047'}))
         time = find_text.split('>')[1].split('<')[0]
         find_text = str(soup.find('span', {'data-wikidata-property-id': 'P2130'}))
@@ -961,9 +960,7 @@ async def film(ctx, *kino):
 
         except:
             pass
-        budget = budget.split('">')[1].split('<sup')[0]
         find_text = str(soup.find('span', {'data-wikidata-property-id': 'P2142'}))
-        sbori = find_text.split('">')[1].split('<sup')[0]
         cc1 = h[0]
         cc2 = 0
         try:
@@ -1000,6 +997,7 @@ async def film(ctx, *kino):
                 if 'http' not in s:
                     break
     except Exception as e:
+        print(e)
         pp = 'Я не понял запрос(\nПопробуйте уточнить!'
         # return
     try:
